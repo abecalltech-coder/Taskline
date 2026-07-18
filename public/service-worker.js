@@ -20,8 +20,8 @@ self.addEventListener('push', (event) => {
     tag: data.taskId || 'taskline',
     renotify: true,
     requireInteraction: true,
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: '/IMG_1410.png',
+    badge: '/IMG_1410.png',
     data: { taskId: data.taskId },
     actions: [
       { action: 'snooze', title: '5分後に再通知' },
