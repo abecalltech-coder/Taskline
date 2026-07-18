@@ -26,6 +26,7 @@ module.exports = async (req, res) => {
     const now = new Date();
     const tasks = await getTasks();
     const subs = await getSubscriptions();
+    const debugErrors = [];
 
     const dueTasks = tasks.filter(t => {
       if (t.completed) return false;
@@ -34,7 +35,7 @@ module.exports = async (req, res) => {
     });
 
     if (dueTasks.length === 0) {
-      res.status(200).json({ checked: tasks.length, notified: 0 });
+      res.status(200).json({ checked: tasks.length, notified: 0, subs: subs.length });
       return;
     }
 
@@ -57,6 +58,7 @@ module.exports = async (req, res) => {
           try {
             await webpush.sendNotification(sub, payload);
           } catch (err) {
+            debugErrors.push({ statusCode: err.statusCode, message: err.message, body: err.body });
             if (err.statusCode === 404 || err.statusCode === 410) {
               staleEndpoints.add(sub.endpoint);
             }
@@ -72,7 +74,7 @@ module.exports = async (req, res) => {
 
     await setTasks(tasks);
 
-    res.status(200).json({ checked: tasks.length, notified: dueTasks.length });
+    res.status(200).json({ checked: tasks.length, notified: dueTasks.length, subs: subs.length, debugErrors });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
