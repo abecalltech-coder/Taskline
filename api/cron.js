@@ -46,10 +46,12 @@ module.exports = async (req, res) => {
       task.alerted = true;
       task.snoozeUntil = null;
 
+      const dueDisplay = new Date(task.dueAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+
       const payload = JSON.stringify({
         taskId: task.id,
         title: `${task.name}`,
-        body: `期日：${new Date(task.dueAt).toLocaleString('ja-JP')}${task.detail ? '\n' + task.detail : ''}`,
+        body: `期日：${dueDisplay}${task.detail ? '\n' + task.detail : ''}`,
         priority: task.priority
       });
 
