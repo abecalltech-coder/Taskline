@@ -136,6 +136,7 @@
 </main>
 
 <button class="fab" id="fab-add-btn" title="新規タスク">＋</button>
+
 <div class="overlay" id="task-overlay">
   <div class="modal">
     <h3 id="modal-title">新規タスク</h3>
@@ -215,7 +216,6 @@ async function apiDeleteTask(id){
   if(!res.ok) throw new Error('削除に失敗しました');
   return res.json();
 }
-
 async function refreshTasks(){
   try{
     tasks = await apiGetTasks();
@@ -278,6 +278,7 @@ function render(){
   if(done.length){ html += `<section class="group"><div class="group-head"><h2>完了済み</h2><span class="count">${done.length}</span></div>${done.map(t=>taskCardHTML(t,false)).join('')}</section>`; }
   container.innerHTML = html || `<div class="empty-state">タスクはまだありません。右下の「＋」から新規タスクを追加してください。</div>`;
 }
+
 /* ---------- Modal ---------- */
 const overlay = document.getElementById('task-overlay');
 const form = document.getElementById('task-form');
@@ -383,6 +384,9 @@ async function initPush(){
   if(existing && Notification.permission === 'granted'){
     notifBtn.classList.add('active');
     statusLine.textContent = 'アプリを閉じていても通知が届きます。';
+    try{
+      await fetch('/api/subscribe', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(existing) });
+    }catch(e){}
   } else {
     statusLine.textContent = '🔔ボタンから通知を有効にしてください。';
   }
