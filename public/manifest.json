@@ -1,0 +1,14 @@
+{
+  "name": "TASKLINE ｜ タスク管理",
+  "short_name": "TASKLINE",
+  "description": "優先度と期日でタスクを管理し、期日にアラーム通知を行うタスク管理アプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#22314A",
+  "theme_color": "#22314A",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
