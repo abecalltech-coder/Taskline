@@ -1,5 +1,5 @@
-const { getSubscriptions, setSubscriptions } = require('./_db');
-const { getAuthUser } = require('./_auth');
+const { getSubscriptions, setSubscriptions } = require('../lib/db');
+const { getAuthUser } = require('../lib/auth');
 
 module.exports = async (req, res) => {
   try {
