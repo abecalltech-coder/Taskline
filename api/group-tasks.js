@@ -18,6 +18,12 @@ function uidPersonal() {
   return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
+function normalizeAssignees(v) {
+  if (!v) return [];
+  if (Array.isArray(v)) return v.filter(Boolean);
+  return [v];
+}
+
 async function checkMembership(username, groupId) {
   const users = await getUsers();
   const user = users[username];
@@ -35,16 +41,16 @@ async function isGroupLeaderOrAdmin(username, groupId) {
   return !!(groups[groupId] && groups[groupId].leaderUsername === username);
 }
 
-async function validateAssignee(groupId, assignedTo) {
-  if (!assignedTo) return true;
+async function validateAssignees(groupId, assignedTo) {
+  if (!assignedTo || assignedTo.length === 0) return true;
   const users = await getUsers();
-  return !!(users[assignedTo] && users[assignedTo].groupId === groupId);
+  return assignedTo.every(name => users[name] && users[name].groupId === groupId);
 }
 
 async function sendUrgentPush(groupId, task, fromUsername) {
   const users = await getUsers();
-  const targetUsernames = task.assignedTo
-    ? [task.assignedTo]
+  const targetUsernames = (task.assignedTo && task.assignedTo.length)
+    ? task.assignedTo
     : Object.entries(users).filter(([, u]) => u.groupId === groupId).map(([name]) => name);
 
   const payload = JSON.stringify({
@@ -135,8 +141,8 @@ module.exports = async (req, res) => {
       const allowed = await checkMembership(username, body.groupId);
       if (!allowed) { res.status(403).json({ error: 'このグループへのアクセス権がありません' }); return; }
 
-      const assignedTo = body.assignedTo || null;
-      if (assignedTo && !(await validateAssignee(body.groupId, assignedTo))) {
+      const assignedTo = normalizeAssignees(body.assignedTo);
+      if (!(await validateAssignees(body.groupId, assignedTo))) {
         res.status(400).json({ error: '指定した担当者はこのグループのメンバーではありません' });
         return;
       }
@@ -191,11 +197,12 @@ module.exports = async (req, res) => {
         task.remindAlerted = false;
       }
       if (body.assignedTo !== undefined) {
-        if (body.assignedTo && !(await validateAssignee(body.groupId, body.assignedTo))) {
+        const assignedTo = normalizeAssignees(body.assignedTo);
+        if (!(await validateAssignees(body.groupId, assignedTo))) {
           res.status(400).json({ error: '指定した担当者はこのグループのメンバーではありません' });
           return;
         }
-        task.assignedTo = body.assignedTo || null;
+        task.assignedTo = assignedTo;
       }
       if (body.resetAlert) { task.alerted = false; task.snoozeUntil = null; task.remindAlerted = false; }
       await setGroupTasks(body.groupId, tasks);
