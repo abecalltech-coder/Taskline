@@ -29,11 +29,17 @@ async function isGroupLeaderOrAdmin(username, groupId) {
   return !!(groups[groupId] && groups[groupId].leaderUsername === username);
 }
 
+async function validateAssignee(groupId, assignedTo) {
+  if (!assignedTo) return true;
+  const users = await getUsers();
+  return !!(users[assignedTo] && users[assignedTo].groupId === groupId);
+}
+
 async function sendUrgentPush(groupId, task, fromUsername) {
   const users = await getUsers();
-  const memberUsernames = Object.entries(users)
-    .filter(([, u]) => u.groupId === groupId)
-    .map(([name]) => name);
+  const targetUsernames = task.assignedTo
+    ? [task.assignedTo]
+    : Object.entries(users).filter(([, u]) => u.groupId === groupId).map(([name]) => name);
 
   const payload = JSON.stringify({
     taskId: task.id,
@@ -42,7 +48,7 @@ async function sendUrgentPush(groupId, task, fromUsername) {
     priority: 5
   });
 
-  for (const memberUsername of memberUsernames) {
+  for (const memberUsername of targetUsernames) {
     const subs = await getSubscriptions(memberUsername);
     await Promise.all(subs.map(sub => webpush.sendNotification(sub, payload).catch(() => {})));
   }
@@ -72,6 +78,12 @@ module.exports = async (req, res) => {
       const allowed = await checkMembership(username, body.groupId);
       if (!allowed) { res.status(403).json({ error: 'このグループへのアクセス権がありません' }); return; }
 
+      const assignedTo = body.assignedTo || null;
+      if (assignedTo && !(await validateAssignee(body.groupId, assignedTo))) {
+        res.status(400).json({ error: '指定した担当者はこのグループのメンバーではありません' });
+        return;
+      }
+
       const tasks = await getGroupTasks(body.groupId);
       const task = {
         id: uid(),
@@ -82,7 +94,8 @@ module.exports = async (req, res) => {
         completed: false,
         alerted: false,
         snoozeUntil: null,
-        createdBy: username
+        createdBy: username,
+        assignedTo
       };
       tasks.push(task);
       await setGroupTasks(body.groupId, tasks);
@@ -114,6 +127,13 @@ module.exports = async (req, res) => {
       if (body.priority !== undefined) task.priority = Number(body.priority);
       if (body.completed !== undefined) task.completed = !!body.completed;
       if (body.snoozeUntil !== undefined) task.snoozeUntil = body.snoozeUntil;
+      if (body.assignedTo !== undefined) {
+        if (body.assignedTo && !(await validateAssignee(body.groupId, body.assignedTo))) {
+          res.status(400).json({ error: '指定した担当者はこのグループのメンバーではありません' });
+          return;
+        }
+        task.assignedTo = body.assignedTo || null;
+      }
       if (body.resetAlert) { task.alerted = false; task.snoozeUntil = null; }
       await setGroupTasks(body.groupId, tasks);
 
