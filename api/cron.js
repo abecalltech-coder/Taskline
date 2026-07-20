@@ -103,13 +103,15 @@ module.exports = async (req, res) => {
 
       if (dueTasks.length === 0) continue;
 
-      const memberUsernames = Object.entries(users)
+      const allMemberUsernames = Object.entries(users)
         .filter(([, u]) => u.groupId === groupId)
         .map(([name]) => name);
 
       for (const task of dueTasks) {
         task.alerted = true;
         task.snoozeUntil = null;
+
+        const targetUsernames = task.assignedTo ? [task.assignedTo] : allMemberUsernames;
 
         const payload = JSON.stringify({
           taskId: task.id,
@@ -118,7 +120,7 @@ module.exports = async (req, res) => {
           priority: task.priority
         });
 
-        for (const memberUsername of memberUsernames) {
+        for (const memberUsername of targetUsernames) {
           const subs = await getSubscriptions(memberUsername);
           await Promise.all(
             subs.map(sub =>
