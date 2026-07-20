@@ -129,7 +129,10 @@ function render(){
       </td>
       <td>
         <button class="btn-secondary" data-action="resetPassword" data-username="${escapeHTML(name)}">パスワード変更</button>
+        <button class="btn-secondary" data-action="renameUser" data-username="${escapeHTML(name)}">IDを変更</button>
         <button class="btn-secondary" data-action="toggleAdmin" data-username="${escapeHTML(name)}" data-current="${u.isAdmin?1:0}">${u.isAdmin?'管理者を解除':'管理者にする'}</button>
+        ${u.groupId ? `<button class="btn-secondary" data-action="toggleLeader" data-username="${escapeHTML(name)}" data-groupid="${escapeHTML(u.groupId)}" data-current="${isLeader?1:0}">${isLeader?'責任者を解除':'責任者にする'}</button>` : ''}
+        <button class="btn-danger" data-action="deleteUser" data-username="${escapeHTML(name)}">削除</button>
       </td>
     </tr>`;
   }
@@ -189,6 +192,15 @@ function render(){
   document.querySelectorAll('button[data-action="toggleAdmin"]').forEach(el => {
     el.addEventListener('click', () => toggleAdmin(el.dataset.username, el.dataset.current === '1'));
   });
+  document.querySelectorAll('button[data-action="renameUser"]').forEach(el => {
+    el.addEventListener('click', () => renameUser(el.dataset.username));
+  });
+  document.querySelectorAll('button[data-action="deleteUser"]').forEach(el => {
+    el.addEventListener('click', () => deleteUser(el.dataset.username));
+  });
+  document.querySelectorAll('button[data-action="toggleLeader"]').forEach(el => {
+    el.addEventListener('click', () => toggleLeader(el.dataset.username, el.dataset.groupid, el.dataset.current === '1'));
+  });
 }
 
 function showMsg(text, isError){
@@ -229,6 +241,32 @@ async function resetPassword(username){
 async function toggleAdmin(username, current){
   if(!confirm(current ? `${username} さんの管理者権限を解除しますか？` : `${username} さんを管理者にしますか？`)) return;
   try{ await callAdmin({ action:'setAdmin', username, isAdmin: !current }); showMsg('権限を更新しました'); await loadData(); }catch(e){}
+}
+async function renameUser(username){
+  const newUsername = prompt(`${username} さんの新しいユーザーIDを入力してください（半角英数字・ひらがな・カタカナ・漢字、3〜20文字）`, username);
+  if(!newUsername || newUsername === username) return;
+  try{
+    await callAdmin({ action:'renameUser', oldUsername: username, newUsername });
+    showMsg('ユーザーIDを変更しました（対象者は再ログインが必要です）');
+    await loadData();
+  }catch(e){}
+}
+async function deleteUser(username){
+  if(!confirm(`${username} さんを削除しますか？この操作は取り消せません。タスクや通知設定もすべて削除されます。`)) return;
+  try{
+    await callAdmin({ action:'deleteUser', username });
+    showMsg('ユーザーを削除しました');
+    await loadData();
+  }catch(e){}
+}
+async function toggleLeader(username, groupId, current){
+  const label = current ? '責任者を解除' : `${username} さんを責任者にする`;
+  if(!confirm(current ? `${username} さんの責任者権限を解除しますか？` : `${username} さんをこのグループの責任者にしますか？`)) return;
+  try{
+    await callAdmin({ action:'setLeader', groupId, username: current ? null : username });
+    showMsg('責任者を更新しました');
+    await loadData();
+  }catch(e){}
 }
 
 init();
