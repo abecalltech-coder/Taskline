@@ -61,4 +61,703 @@
   .p-bar{width:6px;flex:none;}
   .task-body{flex:1;padding:13px 16px;min-width:0;}
   .task-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
-  .task-name{font-size:15px;font-weight:500;color:var(--ink);word-break:b
+  .task-name{font-size:15px;font-weight:500;color:var(--ink);word-break:break-word;}
+  .task-name.done{text-decoration:line-through;color:var(--ink-faint);}
+  .task-meta{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap;}
+  .due-pill{font-family:var(--font-mono);font-size:12px;padding:2px 9px;border-radius:20px;border:1px solid var(--line-strong);color:var(--ink-soft);display:flex;align-items:center;gap:5px;}
+  .due-pill.overdue{background:var(--danger-bg);border-color:var(--danger-line);color:var(--danger-ink);}
+  .prio-pill{font-family:var(--font-mono);font-size:11px;padding:2px 8px;border-radius:20px;color:#fff;font-weight:500;}
+  .task-detail{font-size:12.5px;color:var(--ink-soft);margin-top:7px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .task-actions{display:flex;flex-direction:column;border-left:1px solid var(--line);flex:none;}
+  .task-actions button{border:none;background:transparent;width:42px;flex:1;cursor:pointer;color:var(--ink-faint);font-size:16px;display:flex;align-items:center;justify-content:center;}
+  .task-actions button:hover{background:var(--surface-alt);color:var(--ink);}
+  .task-actions button.complete-btn:hover{color:var(--ok);background:var(--ok-bg);}
+  .task-actions button.delete-btn:hover{color:var(--danger-ink);background:var(--danger-bg);}
+  .task-actions button + button{border-top:1px solid var(--line);}
+  .empty-state{text-align:center;padding:40px 20px;color:var(--ink-faint);font-size:13.5px;background:var(--surface);border:1px dashed var(--line-strong);border-radius:var(--radius);}
+  .overlay{position:fixed;inset:0;background:rgba(20,26,38,.5);display:none;align-items:flex-end;justify-content:center;z-index:100;}
+  .overlay.show{display:flex;}
+  @media (min-width:640px){.overlay{align-items:center;}}
+  .modal{background:var(--surface);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:22px 20px 26px;max-height:88vh;overflow-y:auto;}
+  @media (min-width:640px){.modal{border-radius:18px;}}
+  .modal h3{font-family:var(--font-display);font-size:17px;font-weight:700;margin:0 0 18px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:6px;font-weight:500;}
+  .field input[type=text],.field input[type=password],.field textarea,.field input[type=date],.field input[type=time]{width:100%;border:1px solid var(--line-strong);border-radius:10px;padding:10px 12px;font-size:14.5px;font-family:var(--font-body);color:var(--ink);background:var(--surface-alt);}
+  .field textarea{resize:vertical;min-height:64px;}
+  .row-2{display:flex;gap:10px;}
+  .row-2 .field{flex:1;}
+  .prio-select{display:flex;gap:6px;}
+  .prio-opt{flex:1;text-align:center;padding:9px 0;border-radius:10px;cursor:pointer;font-family:var(--font-mono);font-size:13px;font-weight:500;color:#fff;border:2px solid transparent;opacity:.55;}
+  .prio-opt.selected{opacity:1;border-color:rgba(0,0,0,.25);}
+  .modal-actions{display:flex;gap:10px;margin-top:20px;}
+  .btn-secondary{flex:1;background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);padding:12px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
+  .btn-save{flex:2;background:var(--navy);border:none;color:#fff;padding:12px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
+  .fab{position:fixed;right:18px;bottom:18px;z-index:40;width:54px;height:54px;border-radius:50%;background:var(--navy);color:#fff;border:none;font-size:24px;box-shadow:0 6px 20px rgba(34,49,74,.35);cursor:pointer;}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:300;opacity:0;pointer-events:none;transition:opacity .2s ease;}
+  .toast.show{opacity:1;}
+  .auth-screen{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px;}
+  .auth-screen.hide{display:none;}
+  .auth-box{background:var(--surface);border-radius:18px;padding:28px 24px;width:100%;max-width:380px;box-shadow:var(--shadow);}
+  .auth-box .brand-mark{color:var(--navy);margin-bottom:4px;}
+  .auth-sub{font-size:13px;color:var(--ink-soft);margin:0 0 20px;}
+  .auth-error{color:var(--danger-ink);font-size:12.5px;margin:-6px 0 14px;min-height:16px;}
+  #app-root{display:none;}
+  @media (max-width:480px){.stat-chip{min-width:100px;}.legend{display:none;}}
+
+  .admin-link{background:#8A6300;border-color:#8A6300;}
+  .bootstrap-banner{background:#FDF1D8;border:1px solid #F0D89A;color:#8A6300;font-size:12px;padding:8px 12px;border-radius:10px;max-width:920px;margin:10px auto 0;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .bootstrap-banner button{background:#8A6300;color:#fff;border:none;padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--font-body);}
+  .group-section{margin-top:8px;}
+  .group-section-title{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-family:var(--font-display);font-size:15px;font-weight:700;}
+  .group-tag{font-family:var(--font-mono);font-size:11px;background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);padding:2px 8px;border-radius:20px;}
+  .urgent-btn{background:#B23A3A !important;color:#fff !important;}
+  .created-by{font-size:11px;color:var(--ink-faint);margin-top:4px;}
+</style>
+</head>
+<body>
+
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-box">
+    <div class="brand-mark"><span class="dot"></span>TASKLINE</div>
+    <p class="auth-sub" id="auth-sub">ログインしてください</p>
+    <div class="field">
+      <label for="auth-username">ユーザーID</label>
+      <input type="text" id="auth-username" placeholder="半角英数字 3〜20文字" autocapitalize="none" autocorrect="off">
+    </div>
+    <div class="field">
+      <label for="auth-password">パスワード</label>
+      <input type="password" id="auth-password" placeholder="4文字以上">
+    </div>
+    <div class="auth-error" id="auth-error"></div>
+    <button class="btn-save" id="auth-submit-btn" style="width:100%">ログイン</button>
+    <button class="btn-secondary" id="auth-toggle-btn" style="width:100%;margin-top:10px">アカウントを新規作成する</button>
+  </div>
+</div>
+
+<div id="app-root">
+<header class="topbar">
+  <div class="topbar-row">
+    <div>
+      <div class="brand-mark"><span class="dot"></span>TASKLINE</div>
+      <div class="brand-sub">タスク管理一覧</div>
+    </div>
+    <div class="topbar-actions">
+      <a class="icon-btn admin-link" id="admin-link" href="/admin.html" title="管理画面" style="display:none;text-decoration:none;">⚙️</a>
+      <button class="icon-btn" id="notif-btn" title="通知を有効にする">🔔</button>
+    </div>
+  </div>
+  <div class="status-line">
+    <span id="status-line">通知を確認中…</span>
+    <button class="logout-link" id="logout-btn">ログアウト</button>
+  </div>
+  <div id="bootstrap-banner-wrap"></div>
+  <div class="stat-row">
+    <div class="stat-chip overdue"><div class="num" id="stat-overdue">0</div><div class="lbl">期限切れ</div></div>
+    <div class="stat-chip"><div class="num" id="stat-today">0</div><div class="lbl">本日期限</div></div>
+    <div class="stat-chip"><div class="num" id="stat-upcoming">0</div><div class="lbl">今後の予定</div></div>
+    <div class="stat-chip"><div class="num" id="stat-done">0</div><div class="lbl">完了</div></div>
+  </div>
+</header>
+
+<main>
+  <div class="toolbar">
+    <div class="legend">
+      優先度
+      <div class="legend-bar">
+        <span style="background:#3B82D6"></span><span style="background:#1FA089"></span>
+        <span style="background:#E0A426"></span><span style="background:#DB7A2A"></span>
+        <span style="background:#D1483F"></span>
+      </div>
+      低 → 高
+    </div>
+    <button class="btn-primary" id="open-add-btn">＋ 新規タスク</button>
+  </div>
+  <div id="task-groups"></div>
+
+  <div class="group-section" id="group-section" style="display:none;">
+    <div class="group-section-title">
+      👥 グループタスク <span class="group-tag" id="group-name-tag"></span>
+      <button class="btn-primary" id="open-add-group-task-btn" style="margin-left:auto;padding:7px 14px;font-size:13px;">＋ グループタスク</button>
+    </div>
+    <div id="group-task-list"></div>
+  </div>
+</main>
+
+<button class="fab" id="fab-add-btn" title="新規タスク">＋</button>
+
+<div class="overlay" id="task-overlay">
+  <div class="modal">
+    <h3 id="modal-title">新規タスク</h3>
+    <form id="task-form">
+      <div class="field"><label for="f-name">タスク名</label><input type="text" id="f-name" placeholder="例：見積書を送付する" required></div>
+      <div class="field"><label for="f-detail">詳細</label><textarea id="f-detail" placeholder="タスクの詳細を入力"></textarea></div>
+      <div class="row-2">
+        <div class="field"><label for="f-date">期日</label><input type="date" id="f-date" required></div>
+        <div class="field"><label for="f-time">時間</label><input type="time" id="f-time" required></div>
+      </div>
+      <div class="field">
+        <label>優先順位</label>
+        <div class="prio-select" id="prio-select">
+          <div class="prio-opt" data-p="1" style="background:#3B82D6">1</div>
+          <div class="prio-opt" data-p="2" style="background:#1FA089">2</div>
+          <div class="prio-opt selected" data-p="3" style="background:#E0A426">3</div>
+          <div class="prio-opt" data-p="4" style="background:#DB7A2A">4</div>
+          <div class="prio-opt" data-p="5" style="background:#D1483F">5</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancel-btn">キャンセル</button>
+        <button type="submit" class="btn-save">保存する</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="overlay" id="group-task-overlay">
+  <div class="modal">
+    <h3>グループタスクを追加</h3>
+    <form id="group-task-form">
+      <div class="field"><label for="gt-name">タスク名</label><input type="text" id="gt-name" placeholder="例：週次報告の提出" required></div>
+      <div class="field"><label for="gt-detail">詳細</label><textarea id="gt-detail" placeholder="タスクの詳細を入力"></textarea></div>
+      <div class="row-2">
+        <div class="field"><label for="gt-date">期日</label><input type="date" id="gt-date" required></div>
+        <div class="field"><label for="gt-time">時間</label><input type="time" id="gt-time" required></div>
+      </div>
+      <div class="field">
+        <label>優先順位</label>
+        <div class="prio-select" id="gt-prio-select">
+          <div class="prio-opt" data-p="1" style="background:#3B82D6">1</div>
+          <div class="prio-opt" data-p="2" style="background:#1FA089">2</div>
+          <div class="prio-opt selected" data-p="3" style="background:#E0A426">3</div>
+          <div class="prio-opt" data-p="4" style="background:#DB7A2A">4</div>
+          <div class="prio-opt" data-p="5" style="background:#D1483F">5</div>
+        </div>
+      </div>
+      <div class="field" id="gt-urgent-field" style="display:none;">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--danger-ink);">
+          <input type="checkbox" id="gt-urgent" style="width:auto;">
+          🔥 作成と同時に至急通知を送る（責任者・管理者専用）
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="gt-cancel-btn">キャンセル</button>
+        <button type="submit" class="btn-save">保存する</button>
+      </div>
+    </form>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let tasks = [];
+let editingId = null;
+let selectedPriority = 3;
+let authMode = 'login';
+let authToken = localStorage.getItem('taskline_token');
+let authUsername = localStorage.getItem('taskline_user');
+
+function priorityColor(p){ return {1:'#3B82D6',2:'#1FA089',3:'#E0A426',4:'#DB7A2A',5:'#D1483F'}[p] || '#E0A426'; }
+function priorityLabel(p){ return {1:'低',2:'やや低',3:'普通',4:'やや高',5:'高'}[p] || '普通'; }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 2200);
+}
+function escapeHTML(str){
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+function fmtDue(iso){
+  const d = new Date(iso);
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const sameYear = d.getFullYear() === now.getFullYear();
+  const datePart = sameYear ? `${pad(d.getMonth()+1)}/${pad(d.getDate())}` : `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())}`;
+  return `${datePart} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/* ---------- Auth ---------- */
+function authHeaders(){
+  return authToken ? { 'Authorization': 'Bearer ' + authToken } : {};
+}
+function showAuthScreen(){
+  document.getElementById('auth-screen').classList.remove('hide');
+  document.getElementById('app-root').style.display = 'none';
+}
+function hideAuthScreen(){
+  document.getElementById('auth-screen').classList.add('hide');
+  document.getElementById('app-root').style.display = 'block';
+}
+function logout(){
+  localStorage.removeItem('taskline_token');
+  localStorage.removeItem('taskline_user');
+  authToken = null;
+  authUsername = null;
+  showAuthScreen();
+}
+document.getElementById('logout-btn').addEventListener('click', logout);
+
+document.getElementById('auth-toggle-btn').addEventListener('click', ()=>{
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  document.getElementById('auth-sub').textContent = authMode === 'login' ? 'ログインしてください' : '新しいアカウントを作成してください';
+  document.getElementById('auth-submit-btn').textContent = authMode === 'login' ? 'ログイン' : 'アカウントを作成';
+  document.getElementById('auth-toggle-btn').textContent = authMode === 'login' ? 'アカウントを新規作成する' : 'ログイン画面に戻る';
+  document.getElementById('auth-error').textContent = '';
+});
+
+document.getElementById('auth-submit-btn').addEventListener('click', async ()=>{
+  const username = document.getElementById('auth-username').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl = document.getElementById('auth-error');
+  errEl.textContent = '';
+  if(!username || !password){ errEl.textContent = 'ユーザーIDとパスワードを入力してください'; return; }
+  try{
+    const res = await fetch('/api/auth', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action: authMode, username, password })
+    });
+    const data = await res.json();
+    if(!res.ok){ errEl.textContent = data.error || 'エラーが発生しました'; return; }
+    authToken = data.token;
+    authUsername = data.username;
+    localStorage.setItem('taskline_token', authToken);
+    localStorage.setItem('taskline_user', authUsername);
+    hideAuthScreen();
+    startApp();
+  }catch(err){ errEl.textContent = '通信エラーが発生しました'; }
+});
+
+/* ---------- API ---------- */
+async function apiGetTasks(){
+  const res = await fetch('/api/tasks', { headers: authHeaders() });
+  if(res.status === 401){ logout(); throw new Error('ログインが必要です'); }
+  if(!res.ok) throw new Error('取得に失敗しました');
+  return res.json();
+}
+async function apiCreateTask(payload){
+  const res = await fetch('/api/tasks', { method:'POST', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify(payload) });
+  if(res.status === 401){ logout(); throw new Error('ログインが必要です'); }
+  if(!res.ok) throw new Error('作成に失敗しました');
+  return res.json();
+}
+async function apiUpdateTask(payload){
+  const res = await fetch('/api/tasks', { method:'PATCH', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify(payload) });
+  if(res.status === 401){ logout(); throw new Error('ログインが必要です'); }
+  if(!res.ok) throw new Error('更新に失敗しました');
+  return res.json();
+}
+async function apiDeleteTask(id){
+  const res = await fetch(`/api/tasks?id=${encodeURIComponent(id)}`, { method:'DELETE', headers: authHeaders() });
+  if(res.status === 401){ logout(); throw new Error('ログインが必要です'); }
+  if(!res.ok) throw new Error('削除に失敗しました');
+  return res.json();
+}
+
+async function refreshTasks(){
+  try{
+    tasks = await apiGetTasks();
+    render();
+  }catch(e){
+    const el = document.getElementById('status-line');
+    if(el) el.textContent = 'サーバーに接続できません。しばらくしてから再度お試しください。';
+  }
+}
+
+/* ---------- Rendering ---------- */
+function groupTasks(){
+  const now = new Date();
+  const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23,59,59);
+  const active = tasks.filter(t => !t.completed);
+  const done = tasks.filter(t => t.completed);
+  const overdue = active.filter(t => new Date(t.dueAt) < now).sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
+  const today = active.filter(t => new Date(t.dueAt) >= now && new Date(t.dueAt) <= todayEnd).sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
+  const upcoming = active.filter(t => new Date(t.dueAt) > todayEnd).sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
+  const doneSorted = done.sort((a,b)=> new Date(b.dueAt)-new Date(a.dueAt));
+  return { overdue, today, upcoming, done: doneSorted };
+}
+
+function taskCardHTML(t, isOverdue){
+  const color = priorityColor(t.priority);
+  return `
+  <div class="task-card ${t.completed?'done':''}" data-id="${t.id}">
+    <div class="p-bar" style="background:${color}"></div>
+    <div class="task-body">
+      <div class="task-top">
+        <div class="task-name ${t.completed?'done':''}">${escapeHTML(t.name)}</div>
+        <div class="prio-pill" style="background:${color}">P${t.priority} ${priorityLabel(t.priority)}</div>
+      </div>
+      <div class="task-meta"><div class="due-pill ${isOverdue?'overdue':''}">🕒 ${fmtDue(t.dueAt)}</div></div>
+      ${t.detail ? `<div class="task-detail">${escapeHTML(t.detail)}</div>` : ''}
+    </div>
+    <div class="task-actions">
+      <button class="complete-btn" data-action="complete" title="${t.completed?'未完了に戻す':'完了にする'}">${t.completed?'↺':'✓'}</button>
+      <button data-action="edit" title="編集">✎</button>
+      <button class="delete-btn" data-action="delete" title="削除">🗑</button>
+    </div>
+  </div>`;
+}
+
+function render(){
+  const { overdue, today, upcoming, done } = groupTasks();
+  const container = document.getElementById('task-groups');
+  document.getElementById('stat-overdue').textContent = overdue.length;
+  document.getElementById('stat-today').textContent = today.length;
+  document.getElementById('stat-upcoming').textContent = upcoming.length;
+  document.getElementById('stat-done').textContent = done.length;
+
+  if(tasks.length === 0){
+    container.innerHTML = `<div class="empty-state">タスクはまだありません。右下の「＋」から新規タスクを追加してください。</div>`;
+    return;
+  }
+  let html = '';
+  if(overdue.length){ html += `<section class="group"><div class="group-head overdue"><h2>期限切れ</h2><span class="count">${overdue.length}</span></div>${overdue.map(t=>taskCardHTML(t,true)).join('')}</section>`; }
+  if(today.length){ html += `<section class="group"><div class="group-head"><h2>本日期限</h2><span class="count">${today.length}</span></div>${today.map(t=>taskCardHTML(t,false)).join('')}</section>`; }
+  if(upcoming.length){ html += `<section class="group"><div class="group-head"><h2>今後の予定</h2><span class="count">${upcoming.length}</span></div>${upcoming.map(t=>taskCardHTML(t,false)).join('')}</section>`; }
+  if(done.length){ html += `<section class="group"><div class="group-head"><h2>完了済み</h2><span class="count">${done.length}</span></div>${done.map(t=>taskCardHTML(t,false)).join('')}</section>`; }
+  container.innerHTML = html || `<div class="empty-state">タスクはまだありません。右下の「＋」から新規タスクを追加してください。</div>`;
+}
+
+/* ---------- Modal ---------- */
+const overlay = document.getElementById('task-overlay');
+const form = document.getElementById('task-form');
+
+function openModal(task){
+  editingId = task ? task.id : null;
+  document.getElementById('modal-title').textContent = task ? 'タスクを編集' : '新規タスク';
+  document.getElementById('f-name').value = task ? task.name : '';
+  document.getElementById('f-detail').value = task ? task.detail : '';
+  const pad = n => String(n).padStart(2,'0');
+  if(task){
+    const d = new Date(task.dueAt);
+    document.getElementById('f-date').value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    document.getElementById('f-time').value = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    selectedPriority = task.priority;
+  } else {
+    const now = new Date(); now.setMinutes(now.getMinutes()+30);
+    document.getElementById('f-date').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+    document.getElementById('f-time').value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    selectedPriority = 3;
+  }
+  updatePrioUI();
+  overlay.classList.add('show');
+  document.getElementById('f-name').focus();
+}
+function closeModal(){ overlay.classList.remove('show'); form.reset(); editingId = null; }
+function updatePrioUI(){
+  document.querySelectorAll('.prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === selectedPriority));
+}
+document.getElementById('prio-select').addEventListener('click', e=>{
+  const opt = e.target.closest('.prio-opt'); if(!opt) return;
+  selectedPriority = Number(opt.dataset.p); updatePrioUI();
+});
+document.getElementById('open-add-btn').addEventListener('click', ()=> openModal(null));
+document.getElementById('fab-add-btn').addEventListener('click', ()=> openModal(null));
+document.getElementById('cancel-btn').addEventListener('click', closeModal);
+overlay.addEventListener('click', e=>{ if(e.target === overlay) closeModal(); });
+
+form.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const name = document.getElementById('f-name').value.trim();
+  const detail = document.getElementById('f-detail').value.trim();
+  const date = document.getElementById('f-date').value;
+  const time = document.getElementById('f-time').value;
+  if(!name || !date || !time) return;
+  const dueAt = new Date(`${date}T${time}:00`).toISOString();
+  try{
+    if(editingId){
+      await apiUpdateTask({ id: editingId, name, detail, dueAt, priority: selectedPriority, resetAlert: true });
+      showToast('タスクを更新しました');
+    } else {
+      await apiCreateTask({ name, detail, dueAt, priority: selectedPriority });
+      showToast('タスクを追加しました');
+    }
+    await refreshTasks();
+    closeModal();
+  }catch(err){ showToast(err.message); }
+});
+
+document.getElementById('task-groups').addEventListener('click', async e=>{
+  const btn = e.target.closest('button[data-action]'); if(!btn) return;
+  const card = e.target.closest('.task-card');
+  const id = card.dataset.id;
+  const task = tasks.find(t => t.id === id); if(!task) return;
+
+  if(btn.dataset.action === 'edit'){ openModal(task); }
+  else if(btn.dataset.action === 'delete'){
+    if(confirm(`「${task.name}」を削除しますか？`)){
+      try{ await apiDeleteTask(id); await refreshTasks(); showToast('タスクを削除しました'); }
+      catch(err){ showToast(err.message); }
+    }
+  } else if(btn.dataset.action === 'complete'){
+    try{
+      await apiUpdateTask({ id, completed: !task.completed });
+      await refreshTasks();
+      showToast(!task.completed ? '対応完了にしました' : '未完了に戻しました');
+    }catch(err){ showToast(err.message); }
+  }
+});
+
+/* ---------- Push notifications ---------- */
+function urlBase64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+const notifBtn = document.getElementById('notif-btn');
+const statusLine = document.getElementById('status-line');
+let swRegistration = null;
+
+async function initPush(){
+  if(!('serviceWorker' in navigator) || !('PushManager' in window)){
+    statusLine.textContent = 'このブラウザはプッシュ通知に対応していません。';
+    notifBtn.style.display = 'none';
+    return;
+  }
+  swRegistration = await navigator.serviceWorker.register('/service-worker.js');
+  const existing = await swRegistration.pushManager.getSubscription();
+  if(existing && Notification.permission === 'granted'){
+    notifBtn.classList.add('active');
+    statusLine.textContent = `ようこそ、${authUsername}さん。通知は有効です。`;
+    try{
+      await fetch('/api/subscribe', { method:'POST', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify(existing) });
+    }catch(e){}
+  } else {
+    statusLine.textContent = `ようこそ、${authUsername}さん。🔔ボタンから通知を有効にしてください。`;
+  }
+}
+
+async function subscribePush(){
+  if(Notification.permission === 'denied'){
+    showToast('ブラウザの設定で通知がブロックされています');
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if(perm !== 'granted'){ showToast('通知が許可されませんでした'); return; }
+
+  const keyRes = await fetch('/api/vapid-public-key');
+  const { publicKey } = await keyRes.json();
+  if(!publicKey){ showToast('サーバー側の設定が未完了です（VAPID公開鍵）'); return; }
+
+  const sub = await swRegistration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(publicKey)
+  });
+  await fetch('/api/subscribe', { method:'POST', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify(sub) });
+  notifBtn.classList.add('active');
+  statusLine.textContent = `ようこそ、${authUsername}さん。通知は有効です。`;
+  showToast('通知を有効にしました');
+}
+
+notifBtn.addEventListener('click', async ()=>{
+  try{
+    if(notifBtn.classList.contains('active')){
+      showToast('通知は有効です');
+      return;
+    }
+    await subscribePush();
+  }catch(err){ showToast('通知の設定に失敗しました：' + err.message); }
+});
+
+/* ---------- Admin / Group ---------- */
+let meInfo = null;
+let groupTaskItems = [];
+
+async function fetchMe(){
+  try{
+    const res = await fetch('/api/me', { headers: authHeaders() });
+    if(!res.ok) return;
+    meInfo = await res.json();
+    renderMeUI();
+  }catch(e){}
+}
+
+function renderMeUI(){
+  if(!meInfo) return;
+  const adminLink = document.getElementById('admin-link');
+  adminLink.style.display = meInfo.isAdmin ? 'flex' : 'none';
+
+  const bannerWrap = document.getElementById('bootstrap-banner-wrap');
+  if(!meInfo.hasAnyAdmin){
+    bannerWrap.innerHTML = `<div class="bootstrap-banner">
+      <span>このアプリにはまだ管理者がいません。最初のユーザーとして管理者になりますか？</span>
+      <button id="become-admin-btn">管理者になる</button>
+    </div>`;
+    document.getElementById('become-admin-btn').addEventListener('click', becomeAdmin);
+  } else {
+    bannerWrap.innerHTML = '';
+  }
+
+  const groupSection = document.getElementById('group-section');
+  if(meInfo.groupId){
+    groupSection.style.display = 'block';
+    document.getElementById('group-name-tag').textContent = meInfo.groupName || '';
+    loadGroupTasks();
+  } else {
+    groupSection.style.display = 'none';
+  }
+}
+
+async function becomeAdmin(){
+  try{
+    const res = await fetch('/api/bootstrap-admin', { method:'POST', headers: authHeaders() });
+    const data = await res.json();
+    if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
+    showToast('管理者になりました');
+    await fetchMe();
+  }catch(e){ showToast('通信エラーが発生しました'); }
+}
+
+async function loadGroupTasks(){
+  if(!meInfo || !meInfo.groupId) return;
+  try{
+    const res = await fetch(`/api/group-tasks?groupId=${encodeURIComponent(meInfo.groupId)}`, { headers: authHeaders() });
+    if(!res.ok) return;
+    groupTaskItems = await res.json();
+    renderGroupTasks();
+  }catch(e){}
+}
+
+function groupTaskCardHTML(t){
+  const color = priorityColor(t.priority);
+  const canUrgent = meInfo && (meInfo.isAdmin || meInfo.isLeader);
+  return `
+  <div class="task-card ${t.completed?'done':''}" data-id="${t.id}">
+    <div class="p-bar" style="background:${color}"></div>
+    <div class="task-body">
+      <div class="task-top">
+        <div class="task-name ${t.completed?'done':''}">${escapeHTML(t.name)}</div>
+        <div class="prio-pill" style="background:${color}">P${t.priority} ${priorityLabel(t.priority)}</div>
+      </div>
+      <div class="task-meta"><div class="due-pill">🕒 ${fmtDue(t.dueAt)}</div></div>
+      ${t.detail ? `<div class="task-detail">${escapeHTML(t.detail)}</div>` : ''}
+      <div class="created-by">作成者：${escapeHTML(t.createdBy || '')}</div>
+    </div>
+    <div class="task-actions">
+      ${canUrgent ? `<button class="urgent-btn" data-gaction="urgent" title="今すぐ至急通知">🔥</button>` : ''}
+      <button class="complete-btn" data-gaction="complete" title="${t.completed?'未完了に戻す':'完了にする'}">${t.completed?'↺':'✓'}</button>
+      <button class="delete-btn" data-gaction="delete" title="削除">🗑</button>
+    </div>
+  </div>`;
+}
+
+function renderGroupTasks(){
+  const container = document.getElementById('group-task-list');
+  if(groupTaskItems.length === 0){
+    container.innerHTML = `<div class="empty-state">グループタスクはまだありません。</div>`;
+    return;
+  }
+  const sorted = [...groupTaskItems].sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
+  container.innerHTML = sorted.map(groupTaskCardHTML).join('');
+}
+
+document.getElementById('group-task-list').addEventListener('click', async e=>{
+  const btn = e.target.closest('button[data-gaction]'); if(!btn) return;
+  const card = e.target.closest('.task-card');
+  const id = card.dataset.id;
+  const task = groupTaskItems.find(t => t.id === id); if(!task) return;
+
+  if(btn.dataset.gaction === 'complete'){
+    await groupTaskPatch({ id, completed: !task.completed });
+    showToast(!task.completed ? '対応完了にしました' : '未完了に戻しました');
+  } else if(btn.dataset.gaction === 'delete'){
+    if(confirm(`「${task.name}」を削除しますか？`)){
+      await groupTaskDelete(id);
+      showToast('削除しました');
+    }
+  } else if(btn.dataset.gaction === 'urgent'){
+    if(confirm(`「${task.name}」について、グループ全員に至急通知を送りますか？`)){
+      await groupTaskPatch({ id, sendUrgent: true });
+      showToast('至急通知を送信しました');
+    }
+  }
+});
+
+async function groupTaskPatch(payload){
+  try{
+    await fetch('/api/group-tasks', { method:'PATCH', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify({ groupId: meInfo.groupId, ...payload }) });
+    await loadGroupTasks();
+  }catch(e){ showToast('通信エラーが発生しました'); }
+}
+async function groupTaskDelete(id){
+  try{
+    await fetch(`/api/group-tasks?groupId=${encodeURIComponent(meInfo.groupId)}&id=${encodeURIComponent(id)}`, { method:'DELETE', headers: authHeaders() });
+    await loadGroupTasks();
+  }catch(e){ showToast('通信エラーが発生しました'); }
+}
+
+/* ---------- Group task modal ---------- */
+const groupTaskOverlay = document.getElementById('group-task-overlay');
+const groupTaskForm = document.getElementById('group-task-form');
+let gtSelectedPriority = 3;
+
+document.getElementById('open-add-group-task-btn').addEventListener('click', ()=>{
+  groupTaskForm.reset();
+  gtSelectedPriority = 3;
+  document.querySelectorAll('#gt-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === 3));
+  const canUrgent = meInfo && (meInfo.isAdmin || meInfo.isLeader);
+  document.getElementById('gt-urgent-field').style.display = canUrgent ? 'block' : 'none';
+  document.getElementById('gt-urgent').checked = false;
+  const now = new Date(); now.setMinutes(now.getMinutes()+30);
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('gt-date').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+  document.getElementById('gt-time').value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  groupTaskOverlay.classList.add('show');
+});
+document.getElementById('gt-cancel-btn').addEventListener('click', ()=> groupTaskOverlay.classList.remove('show'));
+groupTaskOverlay.addEventListener('click', e=>{ if(e.target === groupTaskOverlay) groupTaskOverlay.classList.remove('show'); });
+document.getElementById('gt-prio-select').addEventListener('click', e=>{
+  const opt = e.target.closest('.prio-opt'); if(!opt) return;
+  gtSelectedPriority = Number(opt.dataset.p);
+  document.querySelectorAll('#gt-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', el === opt));
+});
+
+groupTaskForm.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const name = document.getElementById('gt-name').value.trim();
+  const detail = document.getElementById('gt-detail').value.trim();
+  const date = document.getElementById('gt-date').value;
+  const time = document.getElementById('gt-time').value;
+  const sendUrgent = document.getElementById('gt-urgent').checked;
+  if(!name || !date || !time) return;
+  const dueAt = new Date(`${date}T${time}:00`).toISOString();
+  try{
+    await fetch('/api/group-tasks', {
+      method:'POST',
+      headers:{'Content-Type':'application/json', ...authHeaders()},
+      body: JSON.stringify({ groupId: meInfo.groupId, name, detail, dueAt, priority: gtSelectedPriority, sendUrgent })
+    });
+    showToast(sendUrgent ? 'グループタスクを追加し、至急通知を送信しました' : 'グループタスクを追加しました');
+    groupTaskOverlay.classList.remove('show');
+    await loadGroupTasks();
+  }catch(err){ showToast('通信エラーが発生しました'); }
+});
+
+/* ---------- Init ---------- */
+function startApp(){
+  refreshTasks();
+  initPush();
+  fetchMe();
+  if(window._tasklineInterval) clearInterval(window._tasklineInterval);
+  window._tasklineInterval = setInterval(()=>{ refreshTasks(); if(meInfo && meInfo.groupId) loadGroupTasks(); }, 30000);
+}
+
+if(authToken && authUsername){
+  hideAuthScreen();
+  startApp();
+} else {
+  showAuthScreen();
+}
+</script>
+</body>
+</html>
