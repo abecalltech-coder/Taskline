@@ -21,22 +21,30 @@ async function redisCmd(cmd) {
   return data.result;
 }
 
-async function getTasks() {
-  const raw = await redisCmd(['GET', 'tasks']);
-  return raw ? JSON.parse(raw) : [];
+async function getJSON(key, fallback) {
+  const raw = await redisCmd(['GET', key]);
+  return raw ? JSON.parse(raw) : fallback;
 }
 
-async function setTasks(tasks) {
-  await redisCmd(['SET', 'tasks', JSON.stringify(tasks)]);
+async function setJSON(key, value) {
+  await redisCmd(['SET', key, JSON.stringify(value)]);
 }
 
-async function getSubscriptions() {
-  const raw = await redisCmd(['GET', 'subscriptions']);
-  return raw ? JSON.parse(raw) : [];
-}
+async function getUsers() { return getJSON('users', {}); }
+async function setUsers(users) { return setJSON('users', users); }
 
-async function setSubscriptions(subs) {
-  await redisCmd(['SET', 'subscriptions', JSON.stringify(subs)]);
-}
+async function getSessions() { return getJSON('sessions', {}); }
+async function setSessions(sessions) { return setJSON('sessions', sessions); }
 
-module.exports = { getTasks, setTasks, getSubscriptions, setSubscriptions };
+async function getTasks(username) { return getJSON(`tasks:${username}`, []); }
+async function setTasks(username, tasks) { return setJSON(`tasks:${username}`, tasks); }
+
+async function getSubscriptions(username) { return getJSON(`subscriptions:${username}`, []); }
+async function setSubscriptions(username, subs) { return setJSON(`subscriptions:${username}`, subs); }
+
+module.exports = {
+  getUsers, setUsers,
+  getSessions, setSessions,
+  getTasks, setTasks,
+  getSubscriptions, setSubscriptions
+};
