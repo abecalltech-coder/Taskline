@@ -1,4 +1,4 @@
-const { getUsers, getGroups } = require('../lib/db');
+const { getUsers, getGroups, getTasks } = require('../lib/db');
 const { getAuthUser } = require('../lib/auth');
 
 module.exports = async (req, res) => {
@@ -37,6 +37,61 @@ module.exports = async (req, res) => {
         }
       }
       res.status(200).json({ scope: 'none', usernames: [] });
+      return;
+    }
+
+    if (type === 'managed-groups') {
+      if (me.isAdmin) {
+        const groups = await getGroups();
+        res.status(200).json({ groups });
+        return;
+      }
+      if (me.groupId) {
+        const groups = await getGroups();
+        const group = groups[me.groupId];
+        if (group && group.leaderUsername === username) {
+          res.status(200).json({ groups: { [me.groupId]: group } });
+          return;
+        }
+      }
+      res.status(200).json({ groups: {} });
+      return;
+    }
+
+    if (type === 'viewable-people') {
+      if (me.isAdmin) {
+        res.status(200).json({ usernames: Object.keys(users) });
+        return;
+      }
+      if (me.groupId) {
+        const groups = await getGroups();
+        const group = groups[me.groupId];
+        if (group && group.leaderUsername === username) {
+          const members = Object.keys(users).filter(name => users[name].groupId === me.groupId);
+          res.status(200).json({ usernames: members });
+          return;
+        }
+      }
+      res.status(200).json({ usernames: [] });
+      return;
+    }
+
+    if (type === 'member-tasks') {
+      const targetUsername = req.query.username;
+      if (!targetUsername || !users[targetUsername]) { res.status(404).json({ error: 'ユーザーが見つかりません' }); return; }
+      let allowed = false;
+      if (me.isAdmin) {
+        allowed = true;
+      } else if (me.groupId) {
+        const groups = await getGroups();
+        const group = groups[me.groupId];
+        if (group && group.leaderUsername === username && users[targetUsername].groupId === me.groupId) {
+          allowed = true;
+        }
+      }
+      if (!allowed) { res.status(403).json({ error: 'このユーザーのタスクを見る権限がありません' }); return; }
+      const tasks = await getTasks(targetUsername);
+      res.status(200).json({ tasks });
       return;
     }
 
