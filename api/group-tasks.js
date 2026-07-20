@@ -1,6 +1,9 @@
 const webpush = require('web-push');
-const { getUsers, getGroups, getGroupTasks, setGroupTasks, getSubscriptions } = require('./_db');
-const { getAuthUser } = require('./_auth');
+const {
+  getUsers, getGroups, getGroupTasks, setGroupTasks, getSubscriptions,
+  getTasks, setTasks
+} = require('../lib/db');
+const { getAuthUser } = require('../lib/auth');
 
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT || 'mailto:example@example.com',
@@ -10,6 +13,9 @@ webpush.setVapidDetails(
 
 function uid() {
   return 'gt' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+function uidPersonal() {
+  return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
 async function checkMembership(username, groupId) {
@@ -54,6 +60,49 @@ async function sendUrgentPush(groupId, task, fromUsername) {
   }
 }
 
+async function assignIndividualTask(username, body, res) {
+  const { targetUsername, name, detail, dueAt, priority } = body;
+  if (!targetUsername || !name || !dueAt || !priority) {
+    res.status(400).json({ error: 'targetUsername, name, dueAt, priority は必須です' });
+    return;
+  }
+  const users = await getUsers();
+  const me = users[username];
+  const target = users[targetUsername];
+  if (!me || !target) { res.status(404).json({ error: 'ユーザーが見つかりません' }); return; }
+
+  let allowed = false;
+  if (me.isAdmin) {
+    allowed = true;
+  } else if (me.groupId) {
+    const groups = await getGroups();
+    const group = groups[me.groupId];
+    if (group && group.leaderUsername === username && target.groupId === me.groupId) {
+      allowed = true;
+    }
+  }
+  if (!allowed) {
+    res.status(403).json({ error: 'このユーザーにタスクを割り当てる権限がありません' });
+    return;
+  }
+
+  const tasks = await getTasks(targetUsername);
+  const task = {
+    id: uidPersonal(),
+    name,
+    detail: detail || '',
+    dueAt,
+    priority: Number(priority),
+    completed: false,
+    alerted: false,
+    snoozeUntil: null,
+    assignedBy: username
+  };
+  tasks.push(task);
+  await setTasks(targetUsername, tasks);
+  res.status(201).json(task);
+}
+
 module.exports = async (req, res) => {
   try {
     const username = await getAuthUser(req);
@@ -71,6 +120,12 @@ module.exports = async (req, res) => {
 
     if (req.method === 'POST') {
       const body = req.body || {};
+
+      if (body.scope === 'individual') {
+        await assignIndividualTask(username, body, res);
+        return;
+      }
+
       if (!body.groupId || !body.name || !body.dueAt || !body.priority) {
         res.status(400).json({ error: 'groupId, name, dueAt, priority は必須です' });
         return;
