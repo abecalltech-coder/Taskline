@@ -1,5 +1,8 @@
 const webpush = require('web-push');
-const { getUsers, getTasks, setTasks, getSubscriptions, setSubscriptions } = require('./_db');
+const {
+  getUsers, getTasks, setTasks, getSubscriptions, setSubscriptions,
+  getGroups, getGroupTasks, setGroupTasks
+} = require('./_db');
 
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT || 'mailto:example@example.com',
@@ -14,6 +17,10 @@ function isAuthorized(req) {
   if (auth === `Bearer ${secret}`) return true;
   if (req.query && req.query.secret === secret) return true;
   return false;
+}
+
+function dueDisplay(dueAt) {
+  return new Date(dueAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
 }
 
 module.exports = async (req, res) => {
@@ -31,6 +38,7 @@ module.exports = async (req, res) => {
     let totalNotified = 0;
     const debugErrors = [];
 
+    /* ---- 個人タスク ---- */
     for (const username of usernames) {
       const tasks = await getTasks(username);
       const subs = await getSubscriptions(username);
@@ -51,12 +59,10 @@ module.exports = async (req, res) => {
         task.alerted = true;
         task.snoozeUntil = null;
 
-        const dueDisplay = new Date(task.dueAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
-
         const payload = JSON.stringify({
           taskId: task.id,
           title: `${task.name}`,
-          body: `期日：${dueDisplay}${task.detail ? '\n' + task.detail : ''}`,
+          body: `期日：${dueDisplay(task.dueAt)}${task.detail ? '\n' + task.detail : ''}`,
           priority: task.priority
         });
 
@@ -80,6 +86,51 @@ module.exports = async (req, res) => {
       }
 
       await setTasks(username, tasks);
+      totalNotified += dueTasks.length;
+    }
+
+    /* ---- グループタスク ---- */
+    const groups = await getGroups();
+    for (const [groupId, group] of Object.entries(groups)) {
+      const tasks = await getGroupTasks(groupId);
+      totalChecked += tasks.length;
+
+      const dueTasks = tasks.filter(t => {
+        if (t.completed) return false;
+        const effective = t.snoozeUntil ? new Date(t.snoozeUntil) : new Date(t.dueAt);
+        return effective <= now && !t.alerted;
+      });
+
+      if (dueTasks.length === 0) continue;
+
+      const memberUsernames = Object.entries(users)
+        .filter(([, u]) => u.groupId === groupId)
+        .map(([name]) => name);
+
+      for (const task of dueTasks) {
+        task.alerted = true;
+        task.snoozeUntil = null;
+
+        const payload = JSON.stringify({
+          taskId: task.id,
+          title: `👥[${group.name}] ${task.name}`,
+          body: `期日：${dueDisplay(task.dueAt)}${task.detail ? '\n' + task.detail : ''}`,
+          priority: task.priority
+        });
+
+        for (const memberUsername of memberUsernames) {
+          const subs = await getSubscriptions(memberUsername);
+          await Promise.all(
+            subs.map(sub =>
+              webpush.sendNotification(sub, payload).catch(err => {
+                debugErrors.push({ username: memberUsername, statusCode: err.statusCode, message: err.message });
+              })
+            )
+          );
+        }
+      }
+
+      await setGroupTasks(groupId, tasks);
       totalNotified += dueTasks.length;
     }
 
