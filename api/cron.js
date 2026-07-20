@@ -2,7 +2,7 @@ const webpush = require('web-push');
 const {
   getUsers, getTasks, setTasks, getSubscriptions, setSubscriptions,
   getGroups, getGroupTasks, setGroupTasks
-} = require('./_db');
+} = require('../lib/db');
 
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT || 'mailto:example@example.com',
