@@ -658,7 +658,7 @@ function renderMeUI(){
 
 async function becomeAdmin(){
   try{
-    const res = await fetch('/api/bootstrap-admin', { method:'POST', headers: authHeaders() });
+    const res = await fetch('/api/me', { method:'POST', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify({ action:'bootstrap' }) });
     const data = await res.json();
     if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
     showToast('管理者になりました');
@@ -754,7 +754,7 @@ async function populateGroupAssigneeOptions(){
   sel.innerHTML = '<option value="">（グループ全員）</option>';
   if(!meInfo || !meInfo.groupId) return;
   try{
-    const res = await fetch(`/api/group-members?groupId=${encodeURIComponent(meInfo.groupId)}`, { headers: authHeaders() });
+    const res = await fetch(`/api/people?type=group-members&groupId=${encodeURIComponent(meInfo.groupId)}`, { headers: authHeaders() });
     if(!res.ok) return;
     const data = await res.json();
     data.members.forEach(name => {
@@ -821,7 +821,7 @@ document.getElementById('open-assign-task-btn').addEventListener('click', async 
   const sel = document.getElementById('at-target');
   sel.innerHTML = '<option value="">選択してください</option>';
   try{
-    const res = await fetch('/api/assignable-users', { headers: authHeaders() });
+    const res = await fetch('/api/people?type=assignable', { headers: authHeaders() });
     if(res.ok){
       const data = await res.json();
       data.usernames.forEach(name => {
@@ -855,10 +855,10 @@ assignTaskForm.addEventListener('submit', async e=>{
   if(!targetUsername || !name || !date || !time) return;
   const dueAt = new Date(`${date}T${time}:00`).toISOString();
   try{
-    const res = await fetch('/api/assign-task', {
+    const res = await fetch('/api/group-tasks', {
       method:'POST',
       headers:{'Content-Type':'application/json', ...authHeaders()},
-      body: JSON.stringify({ targetUsername, name, detail, dueAt, priority: atSelectedPriority })
+      body: JSON.stringify({ scope:'individual', targetUsername, name, detail, dueAt, priority: atSelectedPriority })
     });
     const data = await res.json();
     if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
