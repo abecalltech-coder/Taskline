@@ -116,7 +116,7 @@ module.exports = async (req, res) => {
       for (const task of tasks) {
         if (task.completed) continue;
         const due = new Date(task.dueAt);
-        const targetUsernames = task.assignedTo ? [task.assignedTo] : allMemberUsernames;
+        const targetUsernames = (task.assignedTo && task.assignedTo.length) ? task.assignedTo : allMemberUsernames;
 
         const effective = task.snoozeUntil ? new Date(task.snoozeUntil) : due;
         if (effective <= now && !task.alerted) {
