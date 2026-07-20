@@ -15,12 +15,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#FBFBFA; --surface:#FFFFFF; --surface-alt:#F5F6F5;
+    --bg:#F2F4F7; --surface:#FFFFFF; --surface-alt:#F7F8FA;
     --ink:#1B2130; --ink-soft:#5B6472; --ink-faint:#98A1AD;
     --line:#E4E8EE; --line-strong:#D2D8E0;
     --danger-bg:#FDECEC; --danger-line:#F3B9B9; --danger-ink:#B23A3A;
     --ok:#2E9E6C; --ok-bg:#E7F7EF;
-    --accent:#378ADD; --accent-strong:#185FA5; --accent-bg:#E6F1FB;
+    --accent:#22314A; --accent-strong:#334765; --accent-bg:#E9EBF0;
+    --navy:#22314A; --navy-2:#334765;
     --radius:14px;
     --shadow:0 1px 2px rgba(20,30,50,.04), 0 8px 24px rgba(20,30,50,.06);
     --font-display:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;
@@ -30,11 +31,11 @@
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:40px;}
-  header.topbar{background:var(--surface);border-bottom:0.5px solid var(--line);padding:16px 20px;}
+  header.topbar{background:var(--navy);border-bottom:0.5px solid var(--navy-2);padding:18px 20px;}
   .topbar-row{display:flex;align-items:center;justify-content:space-between;max-width:920px;margin:0 auto;}
-  .brand-mark{font-family:var(--font-display);font-weight:700;font-size:18px;letter-spacing:.02em;color:var(--ink);}
-  .avatar-circle{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:var(--font-body);}
-  .status-line{max-width:920px;margin:6px auto 0;font-size:11.5px;color:var(--ink-faint);}
+  .brand-mark{font-family:var(--font-display);font-weight:700;font-size:18px;letter-spacing:.02em;color:#fff;}
+  .avatar-circle{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
+  .status-line{max-width:920px;margin:6px auto 0;font-size:11.5px;color:rgba(255,255,255,.6);}
   .tab-bar{background:var(--surface);border-bottom:0.5px solid var(--line);display:flex;overflow-x:auto;position:sticky;top:0;z-index:50;}
   .tab-bar-inner{display:flex;max-width:920px;margin:0 auto;width:100%;}
   .tab-btn{background:none;border:none;padding:12px 16px;font-size:13px;font-weight:500;color:var(--ink-faint);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:var(--font-body);}
@@ -102,10 +103,10 @@
   .fab{position:fixed;right:18px;bottom:18px;z-index:40;width:54px;height:54px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:24px;box-shadow:0 6px 20px rgba(55,138,221,.35);cursor:pointer;}
   .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:300;opacity:0;pointer-events:none;transition:opacity .2s ease;}
   .toast.show{opacity:1;}
-  .auth-screen{position:fixed;inset:0;background:var(--surface-alt);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px;}
+  .auth-screen{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px;}
   .auth-screen.hide{display:none;}
-  .auth-box{background:var(--surface);border-radius:18px;padding:28px 24px;width:100%;max-width:380px;box-shadow:var(--shadow);border:0.5px solid var(--line);}
-  .auth-box .brand-mark{color:var(--ink);margin-bottom:4px;font-size:20px;}
+  .auth-box{background:var(--surface);border-radius:18px;padding:28px 24px;width:100%;max-width:380px;box-shadow:var(--shadow);}
+  .auth-box .brand-mark{color:var(--navy);margin-bottom:4px;font-size:20px;}
   .auth-sub{font-size:13px;color:var(--ink-soft);margin:0 0 20px;}
   .auth-error{color:var(--danger-ink);font-size:12.5px;margin:-6px 0 14px;min-height:16px;}
   #app-root{display:none;}
@@ -124,6 +125,7 @@
   .nudge-btn{width:100%;margin-top:8px;background:none;border:1px solid var(--line-strong);color:var(--ink-soft);padding:7px 10px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:5px;}
   .nudge-btn:hover{background:var(--danger-bg);border-color:var(--danger-line);color:var(--danger-ink);}
   .owner-tag{font-family:var(--font-mono);font-size:10.5px;background:var(--accent-bg);color:var(--accent-strong);padding:1px 8px;border-radius:20px;}
+  #review-people-select{min-height:140px;}
 </style>
 </head>
 <body>
@@ -192,57 +194,18 @@
 
   <div class="tab-panel" id="tab-group">
     <div id="group-selector-wrap"></div>
-    <div class="group-head" style="margin-bottom:14px;">
-      <h2>グループタスクを作成</h2>
+    <div class="toolbar">
+      <div class="group-head" style="margin:0;"><h2>タスク一覧</h2></div>
+      <button class="btn-primary" id="open-group-task-btn">＋ 新規タスク</button>
     </div>
-    <form id="group-task-form" style="margin-bottom:26px;">
-      <div class="field"><label for="gt-name">タスク名</label><input type="text" id="gt-name" placeholder="例：週次報告の提出" required></div>
-      <div class="field"><label for="gt-detail">詳細</label><textarea id="gt-detail" placeholder="タスクの詳細を入力"></textarea></div>
-      <div class="row-2">
-        <div class="field"><label for="gt-date">期日</label><input type="date" id="gt-date" required></div>
-        <div class="field"><label for="gt-time">時間</label><input type="time" id="gt-time" required></div>
-      </div>
-      <div class="field">
-        <label>優先順位</label>
-        <div class="prio-select" id="gt-prio-select">
-          <div class="prio-opt" data-p="1" style="background:#3B82D6">1</div>
-          <div class="prio-opt" data-p="2" style="background:#1FA089">2</div>
-          <div class="prio-opt selected" data-p="3" style="background:#E0A426">3</div>
-          <div class="prio-opt" data-p="4" style="background:#DB7A2A">4</div>
-          <div class="prio-opt" data-p="5" style="background:#D1483F">5</div>
-        </div>
-      </div>
-      <div class="field">
-        <label>担当者（複数選択可、未選択でグループ全員）</label>
-        <div class="checkbox-list" id="gt-assignee-list"></div>
-      </div>
-      <div class="field">
-        <label for="gt-remind">事前通知</label>
-        <select id="gt-remind">
-          <option value="">なし</option>
-          <option value="5">5分前</option>
-          <option value="30">30分前</option>
-          <option value="60">1時間前</option>
-          <option value="1440">1日前</option>
-        </select>
-      </div>
-      <div class="field" id="gt-urgent-field" style="display:none;">
-        <label style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--danger-ink);">
-          <input type="checkbox" id="gt-urgent" style="width:auto;">
-          🔥 作成と同時に至急通知を送る
-        </label>
-      </div>
-      <button type="submit" class="btn-save" style="width:100%;">グループタスクを作成</button>
-    </form>
-    <div class="group-head"><h2>タスク一覧</h2></div>
     <div id="group-task-list"></div>
   </div>
 
   <div class="tab-panel" id="tab-review">
-    <div class="group-head">
-      <h2>表示する対象者</h2>
+    <div class="field">
+      <label for="review-people-select">表示する対象者（複数選択可）</label>
+      <select id="review-people-select" multiple size="6"></select>
     </div>
-    <div class="checkbox-list" id="review-people-list" style="margin-bottom:20px;"></div>
     <button class="btn-primary" id="open-assign-task-btn" style="margin-bottom:20px;">＋ 個別タスクを割り当てる</button>
     <div id="review-task-list"></div>
   </div>
@@ -307,6 +270,54 @@
       </div>
       <div class="modal-actions">
         <button type="button" class="btn-secondary" id="cancel-btn">キャンセル</button>
+        <button type="submit" class="btn-save">保存する</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="overlay" id="group-task-overlay">
+  <div class="modal">
+    <h3>グループタスクを追加</h3>
+    <form id="group-task-form">
+      <div class="field"><label for="gt-name">タスク名</label><input type="text" id="gt-name" placeholder="例：週次報告の提出" required></div>
+      <div class="field"><label for="gt-detail">詳細</label><textarea id="gt-detail" placeholder="タスクの詳細を入力"></textarea></div>
+      <div class="row-2">
+        <div class="field"><label for="gt-date">期日</label><input type="date" id="gt-date" required></div>
+        <div class="field"><label for="gt-time">時間</label><input type="time" id="gt-time" required></div>
+      </div>
+      <div class="field">
+        <label>優先順位</label>
+        <div class="prio-select" id="gt-prio-select">
+          <div class="prio-opt" data-p="1" style="background:#3B82D6">1</div>
+          <div class="prio-opt" data-p="2" style="background:#1FA089">2</div>
+          <div class="prio-opt selected" data-p="3" style="background:#E0A426">3</div>
+          <div class="prio-opt" data-p="4" style="background:#DB7A2A">4</div>
+          <div class="prio-opt" data-p="5" style="background:#D1483F">5</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>担当者（複数選択可、未選択でグループ全員）</label>
+        <div class="checkbox-list" id="gt-assignee-list"></div>
+      </div>
+      <div class="field">
+        <label for="gt-remind">事前通知</label>
+        <select id="gt-remind">
+          <option value="">なし</option>
+          <option value="5">5分前</option>
+          <option value="30">30分前</option>
+          <option value="60">1時間前</option>
+          <option value="1440">1日前</option>
+        </select>
+      </div>
+      <div class="field" id="gt-urgent-field" style="display:none;">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--danger-ink);">
+          <input type="checkbox" id="gt-urgent" style="width:auto;">
+          🔥 作成と同時に至急通知を送る
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="gt-cancel-btn">キャンセル</button>
         <button type="submit" class="btn-save">保存する</button>
       </div>
     </form>
@@ -766,6 +777,7 @@ let currentGroupCanManage = false;
 
 async function loadGroupTab(){
   const wrap = document.getElementById('group-selector-wrap');
+  const openBtn = document.getElementById('open-group-task-btn');
   if(meInfo.isAdmin){
     wrap.innerHTML = `<div class="group-selector-row"><label style="font-size:12.5px;color:var(--ink-soft);">グループ：</label><select id="group-selector"></select></div>`;
     const sel = document.getElementById('group-selector');
@@ -779,40 +791,30 @@ async function loadGroupTab(){
       });
       if(Object.keys(data.groups).length === 0){
         wrap.innerHTML = `<div class="empty-state">まだグループがありません。管理画面から作成してください。</div>`;
-        document.getElementById('group-task-form').style.display = 'none';
+        openBtn.style.display = 'none';
         return;
       }
     }catch(e){}
-    document.getElementById('group-task-form').style.display = 'block';
+    openBtn.style.display = 'inline-block';
     currentGroupId = sel.value;
     sel.addEventListener('change', async ()=>{
       currentGroupId = sel.value;
       currentGroupCanManage = true;
-      await populateGroupAssigneeOptions();
       await loadGroupTaskList();
-      syncUrgentFieldVisibility();
     });
     currentGroupCanManage = true;
-    await populateGroupAssigneeOptions();
     await loadGroupTaskList();
-    syncUrgentFieldVisibility();
   } else if(meInfo.groupId){
     wrap.innerHTML = `<p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;">グループ：<strong style="color:var(--ink);">${escapeHTML(meInfo.groupName||'')}</strong></p>`;
-    document.getElementById('group-task-form').style.display = 'block';
+    openBtn.style.display = 'inline-block';
     currentGroupId = meInfo.groupId;
     currentGroupCanManage = meInfo.isLeader;
-    await populateGroupAssigneeOptions();
     await loadGroupTaskList();
-    syncUrgentFieldVisibility();
   } else {
     wrap.innerHTML = `<div class="empty-state">所属しているグループがありません。</div>`;
-    document.getElementById('group-task-form').style.display = 'none';
+    openBtn.style.display = 'none';
     document.getElementById('group-task-list').innerHTML = '';
   }
-}
-
-function syncUrgentFieldVisibility(){
-  document.getElementById('gt-urgent-field').style.display = currentGroupCanManage ? 'block' : 'none';
 }
 
 async function populateGroupAssigneeOptions(){
@@ -913,6 +915,23 @@ document.getElementById('gt-prio-select').addEventListener('click', e=>{
   document.querySelectorAll('#gt-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', el === opt));
 });
 
+const groupTaskOverlay = document.getElementById('group-task-overlay');
+document.getElementById('open-group-task-btn').addEventListener('click', async ()=>{
+  if(!currentGroupId) return;
+  document.getElementById('group-task-form').reset();
+  gtSelectedPriority = 3;
+  document.querySelectorAll('#gt-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === 3));
+  document.getElementById('gt-urgent-field').style.display = currentGroupCanManage ? 'block' : 'none';
+  await populateGroupAssigneeOptions();
+  const now = new Date(); now.setMinutes(now.getMinutes()+30);
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('gt-date').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+  document.getElementById('gt-time').value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  groupTaskOverlay.classList.add('show');
+});
+document.getElementById('gt-cancel-btn').addEventListener('click', ()=> groupTaskOverlay.classList.remove('show'));
+groupTaskOverlay.addEventListener('click', e=>{ if(e.target === groupTaskOverlay) groupTaskOverlay.classList.remove('show'); });
+
 document.getElementById('group-task-form').addEventListener('submit', async e=>{
   e.preventDefault();
   if(!currentGroupId) return;
@@ -932,10 +951,7 @@ document.getElementById('group-task-form').addEventListener('submit', async e=>{
       body: JSON.stringify({ groupId: currentGroupId, name, detail, dueAt, priority: gtSelectedPriority, sendUrgent, assignedTo, remindBefore })
     });
     showToast(sendUrgent ? 'グループタスクを追加し、至急通知を送信しました' : 'グループタスクを追加しました');
-    document.getElementById('group-task-form').reset();
-    gtSelectedPriority = 3;
-    document.querySelectorAll('#gt-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === 3));
-    document.querySelectorAll('#gt-assignee-list .checkbox-pill').forEach(el => el.classList.remove('checked'));
+    groupTaskOverlay.classList.remove('show');
     await loadGroupTaskList();
   }catch(err){ showToast('通信エラーが発生しました'); }
 });
@@ -944,26 +960,23 @@ document.getElementById('group-task-form').addEventListener('submit', async e=>{
 let reviewSelectedPeople = [];
 
 async function loadReviewTab(){
-  const listEl = document.getElementById('review-people-list');
-  listEl.innerHTML = '';
+  const sel = document.getElementById('review-people-select');
+  sel.innerHTML = '';
+  reviewSelectedPeople = [];
   try{
     const res = await fetch('/api/people?type=viewable-people', { headers: authHeaders() });
     if(!res.ok) return;
     const data = await res.json();
-    reviewSelectedPeople = [...data.usernames];
     data.usernames.forEach(name => {
-      const label = document.createElement('label');
-      label.className = 'checkbox-pill checked';
-      label.innerHTML = `<input type="checkbox" value="${escapeHTML(name)}" checked>${escapeHTML(name)}`;
-      const input = label.querySelector('input');
-      input.addEventListener('change', ()=>{
-        label.classList.toggle('checked', input.checked);
-        reviewSelectedPeople = Array.from(document.querySelectorAll('#review-people-list input:checked')).map(i => i.value);
-        loadReviewTasks();
-      });
-      listEl.appendChild(label);
+      const opt = document.createElement('option');
+      opt.value = name; opt.textContent = name;
+      sel.appendChild(opt);
     });
   }catch(e){}
+  sel.onchange = ()=>{
+    reviewSelectedPeople = Array.from(sel.selectedOptions).map(o => o.value);
+    loadReviewTasks();
+  };
   await loadReviewTasks();
 }
 
@@ -1013,12 +1026,13 @@ document.getElementById('review-task-list').addEventListener('click', async e=>{
   const card = e.target.closest('.task-card');
   const id = card.dataset.id;
   const owner = card.dataset.owner;
-  if(!confirm(`${owner}さんに催促の通知を送りますか？`)) return;
+  const message = prompt(`${owner}さんに送る催促メッセージを入力してください`, '対応をお願いします');
+  if(message === null) return;
   try{
     const res = await fetch('/api/people', {
       method:'POST',
       headers:{'Content-Type':'application/json', ...authHeaders()},
-      body: JSON.stringify({ action:'nudge', targetUsername: owner, taskId: id })
+      body: JSON.stringify({ action:'nudge', targetUsername: owner, taskId: id, message })
     });
     const data = await res.json();
     if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
