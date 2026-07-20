@@ -34,7 +34,9 @@ module.exports = async (req, res) => {
         priority: Number(body.priority),
         completed: false,
         alerted: false,
-        snoozeUntil: null
+        snoozeUntil: null,
+        remindBefore: body.remindBefore ? Number(body.remindBefore) : null,
+        remindAlerted: false
       };
       tasks.push(task);
       await setTasks(username, tasks);
@@ -60,9 +62,14 @@ module.exports = async (req, res) => {
       if (body.priority !== undefined) task.priority = Number(body.priority);
       if (body.completed !== undefined) task.completed = !!body.completed;
       if (body.snoozeUntil !== undefined) task.snoozeUntil = body.snoozeUntil;
+      if (body.remindBefore !== undefined) {
+        task.remindBefore = body.remindBefore ? Number(body.remindBefore) : null;
+        task.remindAlerted = false;
+      }
       if (body.resetAlert) {
         task.alerted = false;
         task.snoozeUntil = null;
+        task.remindAlerted = false;
       }
       await setTasks(username, tasks);
       res.status(200).json(task);
