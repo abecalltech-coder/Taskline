@@ -42,9 +42,17 @@ async function setTasks(username, tasks) { return setJSON(`tasks:${username}`, t
 async function getSubscriptions(username) { return getJSON(`subscriptions:${username}`, []); }
 async function setSubscriptions(username, subs) { return setJSON(`subscriptions:${username}`, subs); }
 
+async function getGroups() { return getJSON('groups', {}); }
+async function setGroups(groups) { return setJSON('groups', groups); }
+
+async function getGroupTasks(groupId) { return getJSON(`groupTasks:${groupId}`, []); }
+async function setGroupTasks(groupId, tasks) { return setJSON(`groupTasks:${groupId}`, tasks); }
+
 module.exports = {
   getUsers, setUsers,
   getSessions, setSessions,
   getTasks, setTasks,
-  getSubscriptions, setSubscriptions
+  getSubscriptions, setSubscriptions,
+  getGroups, setGroups,
+  getGroupTasks, setGroupTasks
 };
