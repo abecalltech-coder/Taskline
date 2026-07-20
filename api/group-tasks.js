@@ -61,7 +61,7 @@ async function sendUrgentPush(groupId, task, fromUsername) {
 }
 
 async function assignIndividualTask(username, body, res) {
-  const { targetUsername, name, detail, dueAt, priority } = body;
+  const { targetUsername, name, detail, dueAt, priority, remindBefore } = body;
   if (!targetUsername || !name || !dueAt || !priority) {
     res.status(400).json({ error: 'targetUsername, name, dueAt, priority は必須です' });
     return;
@@ -96,6 +96,8 @@ async function assignIndividualTask(username, body, res) {
     completed: false,
     alerted: false,
     snoozeUntil: null,
+    remindBefore: remindBefore ? Number(remindBefore) : null,
+    remindAlerted: false,
     assignedBy: username
   };
   tasks.push(task);
@@ -149,6 +151,8 @@ module.exports = async (req, res) => {
         completed: false,
         alerted: false,
         snoozeUntil: null,
+        remindBefore: body.remindBefore ? Number(body.remindBefore) : null,
+        remindAlerted: false,
         createdBy: username,
         assignedTo
       };
@@ -182,6 +186,10 @@ module.exports = async (req, res) => {
       if (body.priority !== undefined) task.priority = Number(body.priority);
       if (body.completed !== undefined) task.completed = !!body.completed;
       if (body.snoozeUntil !== undefined) task.snoozeUntil = body.snoozeUntil;
+      if (body.remindBefore !== undefined) {
+        task.remindBefore = body.remindBefore ? Number(body.remindBefore) : null;
+        task.remindAlerted = false;
+      }
       if (body.assignedTo !== undefined) {
         if (body.assignedTo && !(await validateAssignee(body.groupId, body.assignedTo))) {
           res.status(400).json({ error: '指定した担当者はこのグループのメンバーではありません' });
@@ -189,7 +197,7 @@ module.exports = async (req, res) => {
         }
         task.assignedTo = body.assignedTo || null;
       }
-      if (body.resetAlert) { task.alerted = false; task.snoozeUntil = null; }
+      if (body.resetAlert) { task.alerted = false; task.snoozeUntil = null; task.remindAlerted = false; }
       await setGroupTasks(body.groupId, tasks);
 
       if (body.sendUrgent) {
