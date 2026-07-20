@@ -1,6 +1,6 @@
 const crypto = require('crypto');
-const { getUsers, setUsers, getGroups, setGroups, getTasks } = require('./_db');
-const { getAdminUser } = require('./_admin');
+const { getUsers, setUsers, getGroups, setGroups, getTasks } = require('../lib/db');
+const { getAdminUser } = require('../lib/admin');
 
 function hashPassword(password, salt) {
   return crypto.scryptSync(password, salt, 64).toString('hex');
