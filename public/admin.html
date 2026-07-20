@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TASKLINE ｜ 管理画面</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F2F4F7; --surface:#FFFFFF; --surface-alt:#F7F8FA;
+    --navy:#22314A; --navy-2:#334765;
+    --ink:#1B2130; --ink-soft:#5B6472; --ink-faint:#98A1AD;
+    --line:#E4E8EE; --line-strong:#D2D8E0;
+    --danger-bg:#FDECEC; --danger-line:#F3B9B9; --danger-ink:#B23A3A;
+    --ok:#2E9E6C; --ok-bg:#E7F7EF;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(20,30,50,.04), 0 8px 24px rgba(20,30,50,.06);
+    --font-display:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;
+    --font-body:'Noto Sans JP',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font-body);min-height:100vh;padding-bottom:60px;}
+  header.topbar{background:var(--navy);color:#fff;padding:20px;}
+  .topbar-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;}
+  .brand-mark{font-family:var(--font-display);font-weight:700;font-size:20px;display:flex;align-items:center;gap:8px;}
+  .brand-mark .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#4C8DFF,#E24B4A);}
+  a.back-link{color:rgba(255,255,255,.75);font-size:13px;text-decoration:none;}
+  main{max-width:960px;margin:0 auto;padding:24px 16px;}
+  section.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:20px;box-shadow:var(--shadow);}
+  section.panel h2{font-family:var(--font-display);font-size:16px;margin:0 0 14px;}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;}
+  input[type=text],input[type=password],select{border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;font-size:13.5px;font-family:var(--font-body);background:var(--surface-alt);color:var(--ink);}
+  button{border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
+  .btn-primary{background:var(--navy);color:#fff;}
+  .btn-secondary{background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);}
+  .btn-danger{background:var(--danger-bg);color:var(--danger-ink);border:1px solid var(--danger-line);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);}
+  th{color:var(--ink-soft);font-weight:500;font-size:12px;}
+  .badge{font-family:var(--font-mono);font-size:11px;padding:2px 7px;border-radius:20px;background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);}
+  .badge.admin{background:#FDF1D8;border-color:#F0D89A;color:#8A6300;}
+  .badge.leader{background:#E7F7EF;border-color:#B9E6CC;color:#1F7A4E;}
+  .msg{font-size:13px;padding:8px 12px;border-radius:8px;margin-bottom:14px;}
+  .msg.error{background:var(--danger-bg);color:var(--danger-ink);}
+  .msg.ok{background:var(--ok-bg);color:var(--ok);}
+  .center-box{max-width:420px;margin:60px auto;text-align:center;background:var(--surface);border-radius:var(--radius);padding:30px 24px;box-shadow:var(--shadow);}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-mark"><span class="dot"></span>TASKLINE 管理画面</div>
+    <a class="back-link" href="/">← アプリに戻る</a>
+  </div>
+</header>
+
+<main id="main-content">
+  <div class="center-box">読み込み中…</div>
+</main>
+
+<script>
+const token = localStorage.getItem('taskline_token');
+let usersData = {};
+let groupsData = {};
+
+function authHeaders(){
+  return token ? { 'Authorization': 'Bearer ' + token } : {};
+}
+
+function escapeHTML(str){
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+async function init(){
+  if(!token){
+    document.getElementById('main-content').innerHTML = `<div class="center-box">ログインが必要です。<br><br><a href="/">アプリに戻ってログインしてください</a></div>`;
+    return;
+  }
+  const meRes = await fetch('/api/me', { headers: authHeaders() });
+  if(!meRes.ok){
+    document.getElementById('main-content').innerHTML = `<div class="center-box">ログインが必要です。<br><br><a href="/">アプリに戻ってログインしてください</a></div>`;
+    return;
+  }
+  const me = await meRes.json();
+  if(!me.isAdmin){
+    document.getElementById('main-content').innerHTML = `<div class="center-box">この画面は管理者のみアクセスできます。<br><br><a href="/">アプリに戻る</a></div>`;
+    return;
+  }
+  await loadData();
+}
+
+async function loadData(){
+  const res = await fetch('/api/admin', { headers: authHeaders() });
+  if(!res.ok){
+    document.getElementById('main-content').innerHTML = `<div class="center-box">データの取得に失敗しました。</div>`;
+    return;
+  }
+  const data = await res.json();
+  usersData = data.users;
+  groupsData = data.groups;
+  render();
+}
+
+function render(){
+  const groupOptions = (selected) => {
+    let html = `<option value="">(未所属)</option>`;
+    for(const [gid, g] of Object.entries(groupsData)){
+      html += `<option value="${gid}" ${selected===gid?'selected':''}>${escapeHTML(g.name)}</option>`;
+    }
+    return html;
+  };
+
+  let usersHTML = `<table><thead><tr><th>ユーザーID</th><th>権限</th><th>所属グループ</th><th>操作</th></tr></thead><tbody>`;
+  for(const [name, u] of Object.entries(usersData)){
+    const group = u.groupId && groupsData[u.groupId] ? groupsData[u.groupId] : null;
+    const isLeader = group && group.leaderUsername === name;
+    usersHTML += `<tr>
+      <td>${escapeHTML(name)}</td>
+      <td>${u.isAdmin ? '<span class="badge admin">管理者</span>' : ''} ${isLeader ? '<span class="badge leader">責任者</span>' : ''}</td>
+      <td>
+        <select data-action="assignGroup" data-username="${escapeHTML(name)}">${groupOptions(u.groupId)}</select>
+      </td>
+      <td>
+        <button class="btn-secondary" data-action="resetPassword" data-username="${escapeHTML(name)}">パスワード変更</button>
+        <button class="btn-secondary" data-action="toggleAdmin" data-username="${escapeHTML(name)}" data-current="${u.isAdmin?1:0}">${u.isAdmin?'管理者を解除':'管理者にする'}</button>
+      </td>
+    </tr>`;
+  }
+  usersHTML += `</tbody></table>`;
+
+  let groupsHTML = '';
+  for(const [gid, g] of Object.entries(groupsData)){
+    const members = Object.entries(usersData).filter(([, u]) => u.groupId === gid).map(([name]) => name);
+    let leaderOptions = `<option value="">(未設定)</option>`;
+    members.forEach(name => {
+      leaderOptions += `<option value="${escapeHTML(name)}" ${g.leaderUsername===name?'selected':''}>${escapeHTML(name)}</option>`;
+    });
+    groupsHTML += `
+    <div class="row" style="border:1px solid var(--line);border-radius:10px;padding:12px;justify-content:space-between;">
+      <div>
+        <strong>${escapeHTML(g.name)}</strong>
+        <div style="font-size:12px;color:var(--ink-soft);margin-top:4px;">メンバー：${members.length ? members.map(escapeHTML).join('、') : 'なし'}</div>
+      </div>
+      <div class="row" style="margin:0;">
+        <label style="font-size:12px;color:var(--ink-soft);">責任者：</label>
+        <select data-action="setLeader" data-groupid="${gid}">${leaderOptions}</select>
+        <button class="btn-danger" data-action="deleteGroup" data-groupid="${gid}">削除</button>
+      </div>
+    </div>`;
+  }
+  if(!groupsHTML) groupsHTML = `<p style="color:var(--ink-faint);font-size:13px;">まだグループがありません。</p>`;
+
+  document.getElementById('main-content').innerHTML = `
+    <div id="msg-area"></div>
+    <section class="panel">
+      <h2>グループ管理</h2>
+      <div class="row">
+        <input type="text" id="new-group-name" placeholder="新しいグループ名">
+        <button class="btn-primary" id="create-group-btn">＋ グループを作成</button>
+      </div>
+      ${groupsHTML}
+    </section>
+    <section class="panel">
+      <h2>登録者一覧</h2>
+      ${usersHTML}
+    </section>
+  `;
+
+  document.getElementById('create-group-btn').addEventListener('click', createGroup);
+  document.querySelectorAll('select[data-action="assignGroup"]').forEach(el => {
+    el.addEventListener('change', () => assignGroup(el.dataset.username, el.value));
+  });
+  document.querySelectorAll('select[data-action="setLeader"]').forEach(el => {
+    el.addEventListener('change', () => setLeader(el.dataset.groupid, el.value));
+  });
+  document.querySelectorAll('button[data-action="deleteGroup"]').forEach(el => {
+    el.addEventListener('click', () => deleteGroup(el.dataset.groupid));
+  });
+  document.querySelectorAll('button[data-action="resetPassword"]').forEach(el => {
+    el.addEventListener('click', () => resetPassword(el.dataset.username));
+  });
+  document.querySelectorAll('button[data-action="toggleAdmin"]').forEach(el => {
+    el.addEventListener('click', () => toggleAdmin(el.dataset.username, el.dataset.current === '1'));
+  });
+}
+
+function showMsg(text, isError){
+  const area = document.getElementById('msg-area');
+  if(!area) return;
+  area.innerHTML = `<div class="msg ${isError?'error':'ok'}">${escapeHTML(text)}</div>`;
+  setTimeout(()=>{ area.innerHTML = ''; }, 3500);
+}
+
+async function callAdmin(payload){
+  const res = await fetch('/api/admin', { method:'POST', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify(payload) });
+  const data = await res.json();
+  if(!res.ok){ showMsg(data.error || 'エラーが発生しました', true); throw new Error(data.error); }
+  return data;
+}
+
+async function createGroup(){
+  const nameEl = document.getElementById('new-group-name');
+  const name = nameEl.value.trim();
+  if(!name) return;
+  try{ await callAdmin({ action:'createGroup', name }); showMsg('グループを作成しました'); await loadData(); }catch(e){}
+}
+async function assignGroup(username, groupId){
+  try{ await callAdmin({ action:'assignGroup', username, groupId: groupId || null }); showMsg('所属グループを更新しました'); await loadData(); }catch(e){}
+}
+async function setLeader(groupId, username){
+  try{ await callAdmin({ action:'setLeader', groupId, username: username || null }); showMsg('責任者を更新しました'); await loadData(); }catch(e){}
+}
+async function deleteGroup(groupId){
+  if(!confirm('このグループを削除しますか？所属メンバーは未所属になります。')) return;
+  try{ await callAdmin({ action:'deleteGroup', groupId }); showMsg('グループを削除しました'); await loadData(); }catch(e){}
+}
+async function resetPassword(username){
+  const newPassword = prompt(`${username} さんの新しいパスワードを入力してください（4文字以上）`);
+  if(!newPassword) return;
+  try{ await callAdmin({ action:'resetPassword', username, newPassword }); showMsg('パスワードを変更しました'); }catch(e){}
+}
+async function toggleAdmin(username, current){
+  if(!confirm(current ? `${username} さんの管理者権限を解除しますか？` : `${username} さんを管理者にしますか？`)) return;
+  try{ await callAdmin({ action:'setAdmin', username, isAdmin: !current }); showMsg('権限を更新しました'); await loadData(); }catch(e){}
+}
+
+init();
+</script>
+</body>
+</html>
