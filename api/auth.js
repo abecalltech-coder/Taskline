@@ -21,8 +21,8 @@ module.exports = async (req, res) => {
       return;
     }
     const cleanUsername = String(username).trim().toLowerCase();
-    if (!/^[a-z0-9_-]{3,20}$/.test(cleanUsername)) {
-      res.status(400).json({ error: 'ユーザーIDは半角英数字・-・_のみ、3〜20文字で入力してください' });
+    if (!/^[a-z0-9_\-\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFFー]{3,20}$/u.test(cleanUsername)) {
+      res.status(400).json({ error: 'ユーザーIDは半角英数字・ひらがな・カタカナ・漢字・-・_のみ、3〜20文字で入力してください' });
       return;
     }
     if (String(password).length < 4) {
