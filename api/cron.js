@@ -1,5 +1,5 @@
 const webpush = require('web-push');
-const { getTasks, setTasks, getSubscriptions, setSubscriptions } = require('./_db');
+const { getUsers, getTasks, setTasks, getSubscriptions, setSubscriptions } = require('./_db');
 
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT || 'mailto:example@example.com',
@@ -24,59 +24,66 @@ module.exports = async (req, res) => {
 
   try {
     const now = new Date();
-    const tasks = await getTasks();
-    const subs = await getSubscriptions();
+    const users = await getUsers();
+    const usernames = Object.keys(users);
+
+    let totalChecked = 0;
+    let totalNotified = 0;
     const debugErrors = [];
 
-    const dueTasks = tasks.filter(t => {
-      if (t.completed) return false;
-      const effective = t.snoozeUntil ? new Date(t.snoozeUntil) : new Date(t.dueAt);
-      return effective <= now && !t.alerted;
-    });
+    for (const username of usernames) {
+      const tasks = await getTasks(username);
+      const subs = await getSubscriptions(username);
+      totalChecked += tasks.length;
 
-    if (dueTasks.length === 0) {
-      res.status(200).json({ checked: tasks.length, notified: 0, subs: subs.length });
-      return;
-    }
-
-    let validSubs = subs;
-    const staleEndpoints = new Set();
-
-    for (const task of dueTasks) {
-      task.alerted = true;
-      task.snoozeUntil = null;
-
-      const dueDisplay = new Date(task.dueAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
-
-      const payload = JSON.stringify({
-        taskId: task.id,
-        title: `${task.name}`,
-        body: `期日：${dueDisplay}${task.detail ? '\n' + task.detail : ''}`,
-        priority: task.priority
+      const dueTasks = tasks.filter(t => {
+        if (t.completed) return false;
+        const effective = t.snoozeUntil ? new Date(t.snoozeUntil) : new Date(t.dueAt);
+        return effective <= now && !t.alerted;
       });
 
-      await Promise.all(
-        validSubs.map(async sub => {
-          try {
-            await webpush.sendNotification(sub, payload);
-          } catch (err) {
-            debugErrors.push({ statusCode: err.statusCode, message: err.message, body: err.body });
-            if (err.statusCode === 404 || err.statusCode === 410) {
-              staleEndpoints.add(sub.endpoint);
+      if (dueTasks.length === 0) continue;
+
+      let validSubs = subs;
+      const staleEndpoints = new Set();
+
+      for (const task of dueTasks) {
+        task.alerted = true;
+        task.snoozeUntil = null;
+
+        const dueDisplay = new Date(task.dueAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+
+        const payload = JSON.stringify({
+          taskId: task.id,
+          title: `${task.name}`,
+          body: `期日：${dueDisplay}${task.detail ? '\n' + task.detail : ''}`,
+          priority: task.priority
+        });
+
+        await Promise.all(
+          validSubs.map(async sub => {
+            try {
+              await webpush.sendNotification(sub, payload);
+            } catch (err) {
+              debugErrors.push({ username, statusCode: err.statusCode, message: err.message });
+              if (err.statusCode === 404 || err.statusCode === 410) {
+                staleEndpoints.add(sub.endpoint);
+              }
             }
-          }
-        })
-      );
+          })
+        );
+      }
+
+      if (staleEndpoints.size > 0) {
+        validSubs = validSubs.filter(s => !staleEndpoints.has(s.endpoint));
+        await setSubscriptions(username, validSubs);
+      }
+
+      await setTasks(username, tasks);
+      totalNotified += dueTasks.length;
     }
 
-    if (staleEndpoints.size > 0) {
-      validSubs = validSubs.filter(s => !staleEndpoints.has(s.endpoint));
-      await setSubscriptions(validSubs);
-    }
-
-    await setTasks(tasks);
-
-    res.status(200).json({ checked: tasks.length, notified: dueTasks.length, subs: subs.length, debugErrors });
+    res.status(200).json({ users: usernames.length, checked: totalChecked, notified: totalNotified, debugErrors });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
