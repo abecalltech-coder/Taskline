@@ -1,4 +1,5 @@
 const { getTasks, setTasks } = require('./_db');
+const { getAuthUser } = require('./_auth');
 
 function uid() {
   return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -6,8 +7,14 @@ function uid() {
 
 module.exports = async (req, res) => {
   try {
+    const username = await getAuthUser(req);
+    if (!username) {
+      res.status(401).json({ error: 'ログインが必要です' });
+      return;
+    }
+
     if (req.method === 'GET') {
-      const tasks = await getTasks();
+      const tasks = await getTasks(username);
       res.status(200).json(tasks);
       return;
     }
@@ -18,7 +25,7 @@ module.exports = async (req, res) => {
         res.status(400).json({ error: 'name, dueAt, priority は必須です' });
         return;
       }
-      const tasks = await getTasks();
+      const tasks = await getTasks(username);
       const task = {
         id: uid(),
         name: body.name,
@@ -30,7 +37,7 @@ module.exports = async (req, res) => {
         snoozeUntil: null
       };
       tasks.push(task);
-      await setTasks(tasks);
+      await setTasks(username, tasks);
       res.status(201).json(task);
       return;
     }
@@ -41,7 +48,7 @@ module.exports = async (req, res) => {
         res.status(400).json({ error: 'id は必須です' });
         return;
       }
-      const tasks = await getTasks();
+      const tasks = await getTasks(username);
       const task = tasks.find(t => t.id === body.id);
       if (!task) {
         res.status(404).json({ error: 'タスクが見つかりません' });
@@ -57,7 +64,7 @@ module.exports = async (req, res) => {
         task.alerted = false;
         task.snoozeUntil = null;
       }
-      await setTasks(tasks);
+      await setTasks(username, tasks);
       res.status(200).json(task);
       return;
     }
@@ -68,9 +75,9 @@ module.exports = async (req, res) => {
         res.status(400).json({ error: 'id は必須です' });
         return;
       }
-      const tasks = await getTasks();
+      const tasks = await getTasks(username);
       const next = tasks.filter(t => t.id !== id);
-      await setTasks(next);
+      await setTasks(username, next);
       res.status(200).json({ ok: true });
       return;
     }
