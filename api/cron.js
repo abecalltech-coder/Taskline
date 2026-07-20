@@ -23,6 +23,25 @@ function dueDisplay(dueAt) {
   return new Date(dueAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
 }
 
+function remindLabel(minutes) {
+  if (minutes >= 1440) return `${Math.round(minutes / 1440)}日前`;
+  if (minutes >= 60) return `${Math.round(minutes / 60)}時間前`;
+  return `${minutes}分前`;
+}
+
+async function pushToUsernames(usernames, payload, debugErrors) {
+  for (const username of usernames) {
+    const subs = await getSubscriptions(username);
+    await Promise.all(
+      subs.map(sub =>
+        webpush.sendNotification(sub, payload).catch(err => {
+          debugErrors.push({ username, statusCode: err.statusCode, message: err.message });
+        })
+      )
+    );
+  }
+}
+
 module.exports = async (req, res) => {
   if (!isAuthorized(req)) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -41,52 +60,46 @@ module.exports = async (req, res) => {
     /* ---- 個人タスク ---- */
     for (const username of usernames) {
       const tasks = await getTasks(username);
-      const subs = await getSubscriptions(username);
       totalChecked += tasks.length;
+      let changed = false;
 
-      const dueTasks = tasks.filter(t => {
-        if (t.completed) return false;
-        const effective = t.snoozeUntil ? new Date(t.snoozeUntil) : new Date(t.dueAt);
-        return effective <= now && !t.alerted;
-      });
+      for (const task of tasks) {
+        if (task.completed) continue;
+        const due = new Date(task.dueAt);
 
-      if (dueTasks.length === 0) continue;
+        const effective = task.snoozeUntil ? new Date(task.snoozeUntil) : due;
+        if (effective <= now && !task.alerted) {
+          task.alerted = true;
+          task.snoozeUntil = null;
+          changed = true;
+          const payload = JSON.stringify({
+            taskId: task.id,
+            title: `${task.name}`,
+            body: `期日：${dueDisplay(task.dueAt)}${task.detail ? '\n' + task.detail : ''}`,
+            priority: task.priority
+          });
+          await pushToUsernames([username], payload, debugErrors);
+          totalNotified++;
+        }
 
-      let validSubs = subs;
-      const staleEndpoints = new Set();
-
-      for (const task of dueTasks) {
-        task.alerted = true;
-        task.snoozeUntil = null;
-
-        const payload = JSON.stringify({
-          taskId: task.id,
-          title: `${task.name}`,
-          body: `期日：${dueDisplay(task.dueAt)}${task.detail ? '\n' + task.detail : ''}`,
-          priority: task.priority
-        });
-
-        await Promise.all(
-          validSubs.map(async sub => {
-            try {
-              await webpush.sendNotification(sub, payload);
-            } catch (err) {
-              debugErrors.push({ username, statusCode: err.statusCode, message: err.message });
-              if (err.statusCode === 404 || err.statusCode === 410) {
-                staleEndpoints.add(sub.endpoint);
-              }
-            }
-          })
-        );
+        if (task.remindBefore && !task.remindAlerted && !task.alerted) {
+          const remindTime = new Date(due.getTime() - task.remindBefore * 60000);
+          if (remindTime <= now && due > now) {
+            task.remindAlerted = true;
+            changed = true;
+            const payload = JSON.stringify({
+              taskId: task.id,
+              title: `⏰ 事前通知：${task.name}`,
+              body: `${remindLabel(task.remindBefore)}です。期日：${dueDisplay(task.dueAt)}${task.detail ? '\n' + task.detail : ''}`,
+              priority: task.priority
+            });
+            await pushToUsernames([username], payload, debugErrors);
+            totalNotified++;
+          }
+        }
       }
 
-      if (staleEndpoints.size > 0) {
-        validSubs = validSubs.filter(s => !staleEndpoints.has(s.endpoint));
-        await setSubscriptions(username, validSubs);
-      }
-
-      await setTasks(username, tasks);
-      totalNotified += dueTasks.length;
+      if (changed) await setTasks(username, tasks);
     }
 
     /* ---- グループタスク ---- */
@@ -94,46 +107,50 @@ module.exports = async (req, res) => {
     for (const [groupId, group] of Object.entries(groups)) {
       const tasks = await getGroupTasks(groupId);
       totalChecked += tasks.length;
-
-      const dueTasks = tasks.filter(t => {
-        if (t.completed) return false;
-        const effective = t.snoozeUntil ? new Date(t.snoozeUntil) : new Date(t.dueAt);
-        return effective <= now && !t.alerted;
-      });
-
-      if (dueTasks.length === 0) continue;
+      let changed = false;
 
       const allMemberUsernames = Object.entries(users)
         .filter(([, u]) => u.groupId === groupId)
         .map(([name]) => name);
 
-      for (const task of dueTasks) {
-        task.alerted = true;
-        task.snoozeUntil = null;
-
+      for (const task of tasks) {
+        if (task.completed) continue;
+        const due = new Date(task.dueAt);
         const targetUsernames = task.assignedTo ? [task.assignedTo] : allMemberUsernames;
 
-        const payload = JSON.stringify({
-          taskId: task.id,
-          title: `👥[${group.name}] ${task.name}`,
-          body: `期日：${dueDisplay(task.dueAt)}${task.detail ? '\n' + task.detail : ''}`,
-          priority: task.priority
-        });
+        const effective = task.snoozeUntil ? new Date(task.snoozeUntil) : due;
+        if (effective <= now && !task.alerted) {
+          task.alerted = true;
+          task.snoozeUntil = null;
+          changed = true;
+          const payload = JSON.stringify({
+            taskId: task.id,
+            title: `👥[${group.name}] ${task.name}`,
+            body: `期日：${dueDisplay(task.dueAt)}${task.detail ? '\n' + task.detail : ''}`,
+            priority: task.priority
+          });
+          await pushToUsernames(targetUsernames, payload, debugErrors);
+          totalNotified++;
+        }
 
-        for (const memberUsername of targetUsernames) {
-          const subs = await getSubscriptions(memberUsername);
-          await Promise.all(
-            subs.map(sub =>
-              webpush.sendNotification(sub, payload).catch(err => {
-                debugErrors.push({ username: memberUsername, statusCode: err.statusCode, message: err.message });
-              })
-            )
-          );
+        if (task.remindBefore && !task.remindAlerted && !task.alerted) {
+          const remindTime = new Date(due.getTime() - task.remindBefore * 60000);
+          if (remindTime <= now && due > now) {
+            task.remindAlerted = true;
+            changed = true;
+            const payload = JSON.stringify({
+              taskId: task.id,
+              title: `⏰ 事前通知：[${group.name}] ${task.name}`,
+              body: `${remindLabel(task.remindBefore)}です。期日：${dueDisplay(task.dueAt)}${task.detail ? '\n' + task.detail : ''}`,
+              priority: task.priority
+            });
+            await pushToUsernames(targetUsernames, payload, debugErrors);
+            totalNotified++;
+          }
         }
       }
 
-      await setGroupTasks(groupId, tasks);
-      totalNotified += dueTasks.length;
+      if (changed) await setGroupTasks(groupId, tasks);
     }
 
     res.status(200).json({ users: usernames.length, checked: totalChecked, notified: totalNotified, debugErrors });
