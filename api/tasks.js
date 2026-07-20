@@ -1,5 +1,5 @@
-const { getTasks, setTasks } = require('./_db');
-const { getAuthUser } = require('./_auth');
+const { getTasks, setTasks } = require('../lib/db');
+const { getAuthUser } = require('../lib/auth');
 
 function uid() {
   return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
