@@ -118,7 +118,14 @@ function render(){
   };
 
   let usersHTML = `<table><thead><tr><th>ユーザーID</th><th>権限</th><th>所属グループ</th><th>操作</th></tr></thead><tbody>`;
-  for(const [name, u] of Object.entries(usersData)){
+  const roleRank = (name, u) => {
+    if(u.isAdmin) return 0;
+    const group = u.groupId && groupsData[u.groupId] ? groupsData[u.groupId] : null;
+    if(group && group.leaderUsername === name) return 1;
+    return 2;
+  };
+  const sortedUsers = Object.entries(usersData).sort((a, b) => roleRank(a[0], a[1]) - roleRank(b[0], b[1]));
+  for(const [name, u] of sortedUsers){
     const group = u.groupId && groupsData[u.groupId] ? groupsData[u.groupId] : null;
     const isLeader = group && group.leaderUsername === name;
     usersHTML += `<tr>
