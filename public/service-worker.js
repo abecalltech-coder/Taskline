@@ -41,27 +41,12 @@ self.addEventListener('notificationclick', (event) => {
     return;
   }
 
-  if (event.action === 'snooze') {
+  if (event.action === 'snooze' || event.action === 'complete') {
     event.waitUntil(
-      fetch('/api/tasks', {
-        method: 'PATCH',
+      fetch('/api/task-action', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: taskId,
-          snoozeUntil: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-          resetAlert: true
-        })
-      })
-    );
-    return;
-  }
-
-  if (event.action === 'complete') {
-    event.waitUntil(
-      fetch('/api/tasks', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: taskId, completed: true })
+        body: JSON.stringify({ taskId, action: event.action })
       })
     );
     return;
