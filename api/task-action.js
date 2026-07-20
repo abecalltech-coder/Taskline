@@ -1,4 +1,4 @@
-const { getUsers, getTasks, setTasks, getGroups, getGroupTasks, setGroupTasks } = require('./_db');
+const { getUsers, getTasks, setTasks, getGroups, getGroupTasks, setGroupTasks } = require('../lib/db');
 
 module.exports = async (req, res) => {
   try {
