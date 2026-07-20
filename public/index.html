@@ -113,6 +113,28 @@
   .group-tag{font-family:var(--font-mono);font-size:11px;background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);padding:2px 8px;border-radius:20px;}
   .urgent-btn{background:#B23A3A !important;color:#fff !important;}
   .created-by{font-size:11px;color:var(--ink-faint);margin-top:4px;}
+
+  .drawer-overlay{position:fixed;inset:0;background:rgba(20,26,38,.4);display:none;z-index:600;}
+  .drawer-overlay.show{display:block;}
+  .drawer-panel{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:92vw;background:var(--surface);box-shadow:-8px 0 24px rgba(0,0,0,.15);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .2s ease;}
+  .drawer-overlay.show .drawer-panel{transform:translateX(0);}
+  .drawer-header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line);}
+  .drawer-title{font-family:var(--font-display);font-weight:700;font-size:16px;}
+  .drawer-close-btn{background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink-soft);}
+  .drawer-tabs{display:flex;border-bottom:1px solid var(--line);}
+  .drawer-tab{flex:1;background:none;border:none;padding:12px 6px;font-size:12px;font-weight:500;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;font-family:var(--font-body);}
+  .drawer-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+  .drawer-content{flex:1;overflow-y:auto;padding:16px 18px;}
+  .drawer-pane{display:none;}
+  .drawer-pane.active{display:block;}
+  .settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);gap:10px;}
+  .settings-row:last-child{border-bottom:none;}
+  .settings-label{font-size:13.5px;color:var(--ink);}
+  .settings-sub{font-size:11.5px;color:var(--ink-faint);margin-top:2px;}
+  .remind-badge{font-family:var(--font-mono);font-size:10.5px;background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);padding:1px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:3px;}
+  .drawer-field{margin-bottom:14px;}
+  .drawer-field label{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:5px;font-weight:500;}
+  .drawer-field select, .drawer-field input{width:100%;border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;font-size:13.5px;font-family:var(--font-body);background:var(--surface-alt);color:var(--ink);}
 </style>
 </head>
 <body>
@@ -135,6 +157,109 @@
   </div>
 </div>
 
+<div class="drawer-overlay" id="drawer-overlay">
+  <div class="drawer-panel">
+    <div class="drawer-header">
+      <div class="drawer-title">メニュー</div>
+      <button class="drawer-close-btn" id="drawer-close-btn">✕</button>
+    </div>
+    <div class="drawer-tabs">
+      <button class="drawer-tab active" data-tab="settings">設定</button>
+      <button class="drawer-tab" id="tab-btn-viewer" data-tab="viewer" style="display:none;">個人タスク</button>
+      <button class="drawer-tab" id="tab-btn-mgtc" data-tab="mgtc" style="display:none;">グループタスク作成</button>
+    </div>
+    <div class="drawer-content">
+      <div class="drawer-pane active" id="pane-settings">
+        <div class="settings-row">
+          <div>
+            <div class="settings-label" id="settings-username-label">ログイン中</div>
+            <div class="settings-sub" id="settings-role-label"></div>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">通知</div>
+            <div class="settings-sub" id="settings-notif-status">確認中…</div>
+          </div>
+          <button class="btn-secondary" id="settings-notif-btn" style="flex:none;padding:8px 14px;">有効にする</button>
+        </div>
+        <div class="settings-row" id="settings-admin-row" style="display:none;">
+          <div class="settings-label">管理画面</div>
+          <a class="btn-secondary" href="/admin.html" style="flex:none;padding:8px 14px;text-decoration:none;">開く</a>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">ログアウト</div>
+          <button class="btn-secondary" id="drawer-logout-btn" style="flex:none;padding:8px 14px;">ログアウト</button>
+        </div>
+      </div>
+
+      <div class="drawer-pane" id="pane-viewer">
+        <div class="drawer-field">
+          <label for="viewer-person-select">表示する人</label>
+          <select id="viewer-person-select"><option value="">選択してください</option></select>
+        </div>
+        <div id="viewer-task-list"></div>
+      </div>
+
+      <div class="drawer-pane" id="pane-mgtc">
+        <form id="mgtc-form">
+          <div class="drawer-field">
+            <label for="mgtc-group-select">グループ</label>
+            <select id="mgtc-group-select" required><option value="">選択してください</option></select>
+          </div>
+          <div class="drawer-field">
+            <label for="mgtc-name">タスク名</label>
+            <input type="text" id="mgtc-name" placeholder="例：月次レポート提出" required>
+          </div>
+          <div class="drawer-field">
+            <label for="mgtc-detail">詳細</label>
+            <input type="text" id="mgtc-detail" placeholder="詳細（任意）">
+          </div>
+          <div class="drawer-field">
+            <label for="mgtc-date">期日</label>
+            <input type="date" id="mgtc-date" required>
+          </div>
+          <div class="drawer-field">
+            <label for="mgtc-time">時間</label>
+            <input type="time" id="mgtc-time" required>
+          </div>
+          <div class="drawer-field">
+            <label>優先順位</label>
+            <div class="prio-select" id="mgtc-prio-select">
+              <div class="prio-opt" data-p="1" style="background:#3B82D6">1</div>
+              <div class="prio-opt" data-p="2" style="background:#1FA089">2</div>
+              <div class="prio-opt selected" data-p="3" style="background:#E0A426">3</div>
+              <div class="prio-opt" data-p="4" style="background:#DB7A2A">4</div>
+              <div class="prio-opt" data-p="5" style="background:#D1483F">5</div>
+            </div>
+          </div>
+          <div class="drawer-field">
+            <label for="mgtc-assignee">担当者（任意）</label>
+            <select id="mgtc-assignee"><option value="">（グループ全員）</option></select>
+          </div>
+          <div class="drawer-field">
+            <label for="mgtc-remind">事前通知</label>
+            <select id="mgtc-remind">
+              <option value="">なし</option>
+              <option value="5">5分前</option>
+              <option value="30">30分前</option>
+              <option value="60">1時間前</option>
+              <option value="1440">1日前</option>
+            </select>
+          </div>
+          <div class="drawer-field">
+            <label style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--danger-ink);">
+              <input type="checkbox" id="mgtc-urgent" style="width:auto;">
+              🔥 作成と同時に至急通知を送る
+            </label>
+          </div>
+          <button type="submit" class="btn-save" style="width:100%;">グループタスクを作成</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="app-root">
 <header class="topbar">
   <div class="topbar-row">
@@ -143,6 +268,7 @@
       <div class="brand-sub">タスク管理一覧</div>
     </div>
     <div class="topbar-actions">
+      <button class="icon-btn" id="menu-btn" title="メニュー">☰</button>
       <a class="icon-btn admin-link" id="admin-link" href="/admin.html" title="管理画面" style="display:none;text-decoration:none;">⚙️</a>
       <button class="icon-btn" id="notif-btn" title="通知を有効にする">🔔</button>
     </div>
@@ -214,6 +340,16 @@
           <div class="prio-opt" data-p="5" style="background:#D1483F">5</div>
         </div>
       </div>
+      <div class="field">
+        <label for="f-remind">事前通知</label>
+        <select id="f-remind">
+          <option value="">なし</option>
+          <option value="5">5分前</option>
+          <option value="30">30分前</option>
+          <option value="60">1時間前</option>
+          <option value="1440">1日前</option>
+        </select>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn-secondary" id="cancel-btn">キャンセル</button>
         <button type="submit" class="btn-save">保存する</button>
@@ -245,6 +381,16 @@
       <div class="field">
         <label for="gt-assignee">担当者（任意）</label>
         <select id="gt-assignee"><option value="">（グループ全員）</option></select>
+      </div>
+      <div class="field">
+        <label for="gt-remind">事前通知</label>
+        <select id="gt-remind">
+          <option value="">なし</option>
+          <option value="5">5分前</option>
+          <option value="30">30分前</option>
+          <option value="60">1時間前</option>
+          <option value="1440">1日前</option>
+        </select>
       </div>
       <div class="field" id="gt-urgent-field" style="display:none;">
         <label style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--danger-ink);">
@@ -284,6 +430,16 @@
           <div class="prio-opt" data-p="5" style="background:#D1483F">5</div>
         </div>
       </div>
+      <div class="field">
+        <label for="at-remind">事前通知</label>
+        <select id="at-remind">
+          <option value="">なし</option>
+          <option value="5">5分前</option>
+          <option value="30">30分前</option>
+          <option value="60">1時間前</option>
+          <option value="1440">1日前</option>
+        </select>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn-secondary" id="at-cancel-btn">キャンセル</button>
         <button type="submit" class="btn-save">割り当てる</button>
@@ -305,6 +461,11 @@ let authUsername = localStorage.getItem('taskline_user');
 
 function priorityColor(p){ return {1:'#3B82D6',2:'#1FA089',3:'#E0A426',4:'#DB7A2A',5:'#D1483F'}[p] || '#E0A426'; }
 function priorityLabel(p){ return {1:'低',2:'やや低',3:'普通',4:'やや高',5:'高'}[p] || '普通'; }
+function remindLabelJs(minutes){
+  if(minutes >= 1440) return `${Math.round(minutes/1440)}日前`;
+  if(minutes >= 60) return `${Math.round(minutes/60)}時間前`;
+  return `${minutes}分前`;
+}
 
 function showToast(msg){
   const t = document.getElementById('toast');
@@ -437,7 +598,7 @@ function taskCardHTML(t, isOverdue){
         <div class="task-name ${t.completed?'done':''}">${escapeHTML(t.name)}</div>
         <div class="prio-pill" style="background:${color}">P${t.priority} ${priorityLabel(t.priority)}</div>
       </div>
-      <div class="task-meta"><div class="due-pill ${isOverdue?'overdue':''}">🕒 ${fmtDue(t.dueAt)}</div></div>
+      <div class="task-meta"><div class="due-pill ${isOverdue?'overdue':''}">🕒 ${fmtDue(t.dueAt)}</div>${t.remindBefore ? `<span class="remind-badge">⏰ ${remindLabelJs(t.remindBefore)}</span>` : ''}</div>
       ${t.detail ? `<div class="task-detail">${escapeHTML(t.detail)}</div>` : ''}
       ${t.assignedBy ? `<div class="created-by">📌 ${escapeHTML(t.assignedBy)}さんから割り当て</div>` : ''}
     </div>
@@ -478,6 +639,7 @@ function openModal(task){
   document.getElementById('modal-title').textContent = task ? 'タスクを編集' : '新規タスク';
   document.getElementById('f-name').value = task ? task.name : '';
   document.getElementById('f-detail').value = task ? task.detail : '';
+  document.getElementById('f-remind').value = task && task.remindBefore ? String(task.remindBefore) : '';
   const pad = n => String(n).padStart(2,'0');
   if(task){
     const d = new Date(task.dueAt);
@@ -513,14 +675,15 @@ form.addEventListener('submit', async e=>{
   const detail = document.getElementById('f-detail').value.trim();
   const date = document.getElementById('f-date').value;
   const time = document.getElementById('f-time').value;
+  const remindBefore = document.getElementById('f-remind').value || null;
   if(!name || !date || !time) return;
   const dueAt = new Date(`${date}T${time}:00`).toISOString();
   try{
     if(editingId){
-      await apiUpdateTask({ id: editingId, name, detail, dueAt, priority: selectedPriority, resetAlert: true });
+      await apiUpdateTask({ id: editingId, name, detail, dueAt, priority: selectedPriority, remindBefore, resetAlert: true });
       showToast('タスクを更新しました');
     } else {
-      await apiCreateTask({ name, detail, dueAt, priority: selectedPriority });
+      await apiCreateTask({ name, detail, dueAt, priority: selectedPriority, remindBefore });
       showToast('タスクを追加しました');
     }
     await refreshTasks();
@@ -654,6 +817,18 @@ function renderMeUI(){
 
   const assignSection = document.getElementById('assign-section');
   assignSection.style.display = (meInfo.isAdmin || meInfo.isLeader) ? 'block' : 'none';
+
+  document.getElementById('settings-username-label').textContent = `ログイン中：${meInfo.username}`;
+  const roles = [];
+  if(meInfo.isAdmin) roles.push('管理者');
+  if(meInfo.isLeader) roles.push('責任者');
+  if(meInfo.groupName) roles.push(`所属：${meInfo.groupName}`);
+  document.getElementById('settings-role-label').textContent = roles.join(' ／ ');
+  document.getElementById('settings-admin-row').style.display = meInfo.isAdmin ? 'flex' : 'none';
+
+  const canManage = meInfo.isAdmin || meInfo.isLeader;
+  document.getElementById('tab-btn-viewer').style.display = canManage ? 'block' : 'none';
+  document.getElementById('tab-btn-mgtc').style.display = canManage ? 'block' : 'none';
 }
 
 async function becomeAdmin(){
@@ -687,7 +862,7 @@ function groupTaskCardHTML(t){
         <div class="task-name ${t.completed?'done':''}">${escapeHTML(t.name)}</div>
         <div class="prio-pill" style="background:${color}">P${t.priority} ${priorityLabel(t.priority)}</div>
       </div>
-      <div class="task-meta"><div class="due-pill">🕒 ${fmtDue(t.dueAt)}</div></div>
+      <div class="task-meta"><div class="due-pill">🕒 ${fmtDue(t.dueAt)}</div>${t.remindBefore ? `<span class="remind-badge">⏰ ${remindLabelJs(t.remindBefore)}</span>` : ''}</div>
       ${t.detail ? `<div class="task-detail">${escapeHTML(t.detail)}</div>` : ''}
       <div class="created-by">作成者：${escapeHTML(t.createdBy || '')}${t.assignedTo ? ` ／ 担当：${escapeHTML(t.assignedTo)}` : ' ／ 担当：グループ全員'}</div>
     </div>
@@ -772,6 +947,7 @@ document.getElementById('open-add-group-task-btn').addEventListener('click', asy
   const canUrgent = meInfo && (meInfo.isAdmin || meInfo.isLeader);
   document.getElementById('gt-urgent-field').style.display = canUrgent ? 'block' : 'none';
   document.getElementById('gt-urgent').checked = false;
+  document.getElementById('gt-remind').value = '';
   await populateGroupAssigneeOptions();
   const now = new Date(); now.setMinutes(now.getMinutes()+30);
   const pad = n => String(n).padStart(2,'0');
@@ -795,13 +971,14 @@ groupTaskForm.addEventListener('submit', async e=>{
   const time = document.getElementById('gt-time').value;
   const sendUrgent = document.getElementById('gt-urgent').checked;
   const assignedTo = document.getElementById('gt-assignee').value || null;
+  const remindBefore = document.getElementById('gt-remind').value || null;
   if(!name || !date || !time) return;
   const dueAt = new Date(`${date}T${time}:00`).toISOString();
   try{
     await fetch('/api/group-tasks', {
       method:'POST',
       headers:{'Content-Type':'application/json', ...authHeaders()},
-      body: JSON.stringify({ groupId: meInfo.groupId, name, detail, dueAt, priority: gtSelectedPriority, sendUrgent, assignedTo })
+      body: JSON.stringify({ groupId: meInfo.groupId, name, detail, dueAt, priority: gtSelectedPriority, sendUrgent, assignedTo, remindBefore })
     });
     showToast(sendUrgent ? 'グループタスクを追加し、至急通知を送信しました' : 'グループタスクを追加しました');
     groupTaskOverlay.classList.remove('show');
@@ -835,6 +1012,7 @@ document.getElementById('open-assign-task-btn').addEventListener('click', async 
   const pad = n => String(n).padStart(2,'0');
   document.getElementById('at-date').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
   document.getElementById('at-time').value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  document.getElementById('at-remind').value = '';
   assignTaskOverlay.classList.add('show');
 });
 document.getElementById('at-cancel-btn').addEventListener('click', ()=> assignTaskOverlay.classList.remove('show'));
@@ -852,18 +1030,160 @@ assignTaskForm.addEventListener('submit', async e=>{
   const detail = document.getElementById('at-detail').value.trim();
   const date = document.getElementById('at-date').value;
   const time = document.getElementById('at-time').value;
+  const remindBefore = document.getElementById('at-remind').value || null;
   if(!targetUsername || !name || !date || !time) return;
   const dueAt = new Date(`${date}T${time}:00`).toISOString();
   try{
     const res = await fetch('/api/group-tasks', {
       method:'POST',
       headers:{'Content-Type':'application/json', ...authHeaders()},
-      body: JSON.stringify({ scope:'individual', targetUsername, name, detail, dueAt, priority: atSelectedPriority })
+      body: JSON.stringify({ scope:'individual', targetUsername, name, detail, dueAt, priority: atSelectedPriority, remindBefore })
     });
     const data = await res.json();
     if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
     showToast(`${targetUsername}さんにタスクを割り当てました`);
     assignTaskOverlay.classList.remove('show');
+  }catch(err){ showToast('通信エラーが発生しました'); }
+});
+
+/* ---------- Drawer menu ---------- */
+const drawerOverlay = document.getElementById('drawer-overlay');
+document.getElementById('menu-btn').addEventListener('click', ()=>{
+  drawerOverlay.classList.add('show');
+  updateSettingsNotifUI();
+});
+document.getElementById('drawer-close-btn').addEventListener('click', ()=> drawerOverlay.classList.remove('show'));
+drawerOverlay.addEventListener('click', e=>{ if(e.target === drawerOverlay) drawerOverlay.classList.remove('show'); });
+document.getElementById('drawer-logout-btn').addEventListener('click', logout);
+
+document.querySelectorAll('.drawer-tab').forEach(tabBtn => {
+  tabBtn.addEventListener('click', ()=>{
+    if(tabBtn.style.display === 'none') return;
+    document.querySelectorAll('.drawer-tab').forEach(b => b.classList.toggle('active', b === tabBtn));
+    const tab = tabBtn.dataset.tab;
+    document.getElementById('pane-settings').classList.toggle('active', tab === 'settings');
+    document.getElementById('pane-viewer').classList.toggle('active', tab === 'viewer');
+    document.getElementById('pane-mgtc').classList.toggle('active', tab === 'mgtc');
+    if(tab === 'viewer') loadViewerPeople();
+    if(tab === 'mgtc') loadMgtcGroups();
+  });
+});
+
+function updateSettingsNotifUI(){
+  const btn = document.getElementById('settings-notif-btn');
+  const statusEl = document.getElementById('settings-notif-status');
+  if(notifBtn.classList.contains('active')){
+    statusEl.textContent = '有効';
+    btn.textContent = '有効です';
+  } else {
+    statusEl.textContent = '未設定';
+    btn.textContent = '有効にする';
+  }
+}
+document.getElementById('settings-notif-btn').addEventListener('click', async ()=>{
+  if(notifBtn.classList.contains('active')){ showToast('通知は有効です'); return; }
+  try{ await subscribePush(); updateSettingsNotifUI(); }
+  catch(err){ showToast('通知の設定に失敗しました：' + err.message); }
+});
+
+/* ---------- 個人タスク（閲覧） ---------- */
+async function loadViewerPeople(){
+  const sel = document.getElementById('viewer-person-select');
+  sel.innerHTML = '<option value="">選択してください</option>';
+  try{
+    const res = await fetch('/api/people?type=viewable-people', { headers: authHeaders() });
+    if(!res.ok) return;
+    const data = await res.json();
+    data.usernames.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name; opt.textContent = name;
+      sel.appendChild(opt);
+    });
+  }catch(e){}
+  document.getElementById('viewer-task-list').innerHTML = '';
+}
+document.getElementById('viewer-person-select').addEventListener('change', async e=>{
+  const targetUsername = e.target.value;
+  const listEl = document.getElementById('viewer-task-list');
+  if(!targetUsername){ listEl.innerHTML = ''; return; }
+  listEl.innerHTML = '<div class="empty-state">読み込み中…</div>';
+  try{
+    const res = await fetch(`/api/people?type=member-tasks&username=${encodeURIComponent(targetUsername)}`, { headers: authHeaders() });
+    if(!res.ok){ listEl.innerHTML = '<div class="empty-state">取得に失敗しました。</div>'; return; }
+    const data = await res.json();
+    if(data.tasks.length === 0){ listEl.innerHTML = '<div class="empty-state">タスクはありません。</div>'; return; }
+    const sorted = [...data.tasks].sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
+    listEl.innerHTML = sorted.map(t => taskCardHTML(t, new Date(t.dueAt) < new Date())).join('');
+    listEl.querySelectorAll('.task-actions').forEach(el => el.remove());
+  }catch(e){ listEl.innerHTML = '<div class="empty-state">通信エラーが発生しました。</div>'; }
+});
+
+/* ---------- グループタスク作成（管理者・責任者） ---------- */
+let mgtcSelectedPriority = 3;
+async function loadMgtcGroups(){
+  const sel = document.getElementById('mgtc-group-select');
+  sel.innerHTML = '<option value="">選択してください</option>';
+  try{
+    const res = await fetch('/api/people?type=managed-groups', { headers: authHeaders() });
+    if(!res.ok) return;
+    const data = await res.json();
+    Object.entries(data.groups).forEach(([groupId, g]) => {
+      const opt = document.createElement('option');
+      opt.value = groupId; opt.textContent = g.name;
+      sel.appendChild(opt);
+    });
+    if(Object.keys(data.groups).length === 1){
+      sel.value = Object.keys(data.groups)[0];
+      sel.dispatchEvent(new Event('change'));
+    }
+  }catch(e){}
+}
+document.getElementById('mgtc-group-select').addEventListener('change', async e=>{
+  const groupId = e.target.value;
+  const assigneeSel = document.getElementById('mgtc-assignee');
+  assigneeSel.innerHTML = '<option value="">（グループ全員）</option>';
+  if(!groupId) return;
+  try{
+    const res = await fetch(`/api/people?type=group-members&groupId=${encodeURIComponent(groupId)}`, { headers: authHeaders() });
+    if(!res.ok) return;
+    const data = await res.json();
+    data.members.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name; opt.textContent = name;
+      assigneeSel.appendChild(opt);
+    });
+  }catch(e){}
+});
+document.getElementById('mgtc-prio-select').addEventListener('click', e=>{
+  const opt = e.target.closest('.prio-opt'); if(!opt) return;
+  mgtcSelectedPriority = Number(opt.dataset.p);
+  document.querySelectorAll('#mgtc-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', el === opt));
+});
+document.getElementById('mgtc-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const groupId = document.getElementById('mgtc-group-select').value;
+  const name = document.getElementById('mgtc-name').value.trim();
+  const detail = document.getElementById('mgtc-detail').value.trim();
+  const date = document.getElementById('mgtc-date').value;
+  const time = document.getElementById('mgtc-time').value;
+  const assignedTo = document.getElementById('mgtc-assignee').value || null;
+  const remindBefore = document.getElementById('mgtc-remind').value || null;
+  const sendUrgent = document.getElementById('mgtc-urgent').checked;
+  if(!groupId || !name || !date || !time) return;
+  const dueAt = new Date(`${date}T${time}:00`).toISOString();
+  try{
+    const res = await fetch('/api/group-tasks', {
+      method:'POST',
+      headers:{'Content-Type':'application/json', ...authHeaders()},
+      body: JSON.stringify({ groupId, name, detail, dueAt, priority: mgtcSelectedPriority, assignedTo, remindBefore, sendUrgent })
+    });
+    const data = await res.json();
+    if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
+    showToast('グループタスクを作成しました');
+    document.getElementById('mgtc-form').reset();
+    mgtcSelectedPriority = 3;
+    document.querySelectorAll('#mgtc-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === 3));
+    if(meInfo.groupId === groupId) await loadGroupTasks();
   }catch(err){ showToast('通信エラーが発生しました'); }
 });
 
