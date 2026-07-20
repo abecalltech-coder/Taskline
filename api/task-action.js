@@ -1,4 +1,4 @@
-const { getUsers, getTasks, setTasks } = require('./_db');
+const { getUsers, getTasks, setTasks, getGroups, getGroupTasks, setGroupTasks } = require('./_db');
 
 module.exports = async (req, res) => {
   try {
@@ -12,23 +12,37 @@ module.exports = async (req, res) => {
       return;
     }
 
-    const users = await getUsers();
-    const usernames = Object.keys(users);
-
-    for (const username of usernames) {
-      const tasks = await getTasks(username);
-      const task = tasks.find(t => t.id === taskId);
-      if (!task) continue;
-
+    const apply = (task) => {
       if (action === 'snooze') {
         task.snoozeUntil = new Date(Date.now() + 5 * 60 * 1000).toISOString();
         task.alerted = false;
       } else if (action === 'complete') {
         task.completed = true;
       }
-      await setTasks(username, tasks);
-      res.status(200).json({ ok: true });
-      return;
+    };
+
+    if (taskId.startsWith('gt')) {
+      const groups = await getGroups();
+      for (const groupId of Object.keys(groups)) {
+        const tasks = await getGroupTasks(groupId);
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) continue;
+        apply(task);
+        await setGroupTasks(groupId, tasks);
+        res.status(200).json({ ok: true });
+        return;
+      }
+    } else {
+      const users = await getUsers();
+      for (const username of Object.keys(users)) {
+        const tasks = await getTasks(username);
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) continue;
+        apply(task);
+        await setTasks(username, tasks);
+        res.status(200).json({ ok: true });
+        return;
+      }
     }
 
     res.status(404).json({ error: 'タスクが見つかりません' });
