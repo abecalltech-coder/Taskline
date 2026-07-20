@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#22314A">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/IMG_1410.png">
 <title>TASKLINE ｜ タスク管理</title>
@@ -15,12 +15,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F2F4F7; --surface:#FFFFFF; --surface-alt:#F7F8FA;
-    --navy:#22314A; --navy-2:#334765;
+    --bg:#FBFBFA; --surface:#FFFFFF; --surface-alt:#F5F6F5;
     --ink:#1B2130; --ink-soft:#5B6472; --ink-faint:#98A1AD;
     --line:#E4E8EE; --line-strong:#D2D8E0;
     --danger-bg:#FDECEC; --danger-line:#F3B9B9; --danger-ink:#B23A3A;
     --ok:#2E9E6C; --ok-bg:#E7F7EF;
+    --accent:#378ADD; --accent-strong:#185FA5; --accent-bg:#E6F1FB;
     --radius:14px;
     --shadow:0 1px 2px rgba(20,30,50,.04), 0 8px 24px rgba(20,30,50,.06);
     --font-display:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;
@@ -29,28 +29,33 @@
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
-  body{background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:64px;}
-  header.topbar{background:var(--navy);color:#fff;padding:22px 20px 20px;position:relative;overflow:hidden;}
-  .topbar-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;max-width:920px;margin:0 auto;}
-  .brand-mark{font-family:var(--font-display);font-weight:700;font-size:22px;letter-spacing:.02em;display:flex;align-items:center;gap:10px;}
-  .brand-mark .dot{width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,#4C8DFF,#E24B4A);flex:none;}
-  .brand-sub{font-size:12.5px;color:rgba(255,255,255,.55);margin-top:4px;letter-spacing:.03em;}
-  .topbar-actions{display:flex;gap:8px;align-items:center;}
-  .icon-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);color:#fff;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;}
-  .icon-btn.active{background:#2E9E6C;border-color:#2E9E6C;}
-  .status-line{max-width:920px;margin:6px auto 0;font-size:11.5px;color:rgba(255,255,255,.5);display:flex;justify-content:space-between;align-items:center;gap:8px;}
-  .logout-link{color:rgba(255,255,255,.65);text-decoration:underline;background:none;border:none;font-size:11.5px;cursor:pointer;font-family:var(--font-body);padding:0;}
-  .stat-row{max-width:920px;margin:18px auto 0;display:flex;gap:10px;flex-wrap:wrap;}
-  .stat-chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:9px 14px;flex:1;min-width:120px;}
-  .stat-chip .num{font-family:var(--font-mono);font-size:19px;font-weight:500;line-height:1;}
-  .stat-chip .lbl{font-size:11.5px;color:rgba(255,255,255,.55);margin-top:5px;}
-  .stat-chip.overdue .num{color:#FF8080;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:40px;}
+  header.topbar{background:var(--surface);border-bottom:0.5px solid var(--line);padding:16px 20px;}
+  .topbar-row{display:flex;align-items:center;justify-content:space-between;max-width:920px;margin:0 auto;}
+  .brand-mark{font-family:var(--font-display);font-weight:700;font-size:18px;letter-spacing:.02em;color:var(--ink);}
+  .avatar-circle{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:var(--font-body);}
+  .status-line{max-width:920px;margin:6px auto 0;font-size:11.5px;color:var(--ink-faint);}
+  .tab-bar{background:var(--surface);border-bottom:0.5px solid var(--line);display:flex;overflow-x:auto;position:sticky;top:0;z-index:50;}
+  .tab-bar-inner{display:flex;max-width:920px;margin:0 auto;width:100%;}
+  .tab-btn{background:none;border:none;padding:12px 16px;font-size:13px;font-weight:500;color:var(--ink-faint);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:var(--font-body);}
+  .tab-btn.active{color:var(--accent-strong);border-bottom-color:var(--accent);}
   main{max-width:920px;margin:0 auto;padding:20px 16px 0;}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  .bootstrap-banner{background:#FAEEDA;border:1px solid #EF9F27;color:#633806;font-size:12px;padding:10px 14px;border-radius:10px;max-width:920px;margin:12px auto 0;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .bootstrap-banner button{background:#633806;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--font-body);}
   .toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
   .legend{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-soft);}
   .legend-bar{display:flex;height:8px;width:120px;border-radius:4px;overflow:hidden;border:1px solid var(--line-strong);}
   .legend-bar span{flex:1;}
-  .btn-primary{background:var(--navy);color:#fff;border:none;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
+  .btn-primary{background:var(--accent);color:#fff;border:none;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
+  .btn-primary:hover{background:var(--accent-strong);}
+  .stat-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+  .stat-chip{background:var(--surface-alt);border:1px solid var(--line);border-radius:10px;padding:9px 14px;flex:1;min-width:110px;}
+  .stat-chip .num{font-family:var(--font-mono);font-size:19px;font-weight:500;line-height:1;color:var(--ink);}
+  .stat-chip .lbl{font-size:11.5px;color:var(--ink-faint);margin-top:5px;}
+  .stat-chip.overdue{background:var(--danger-bg);border-color:var(--danger-line);}
+  .stat-chip.overdue .num{color:var(--danger-ink);}
   section.group{margin-bottom:26px;}
   .group-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-left:2px;}
   .group-head h2{font-family:var(--font-display);font-size:14.5px;font-weight:700;margin:0;color:var(--ink);}
@@ -83,7 +88,7 @@
   .modal h3{font-family:var(--font-display);font-size:17px;font-weight:700;margin:0 0 18px;}
   .field{margin-bottom:16px;}
   .field label{display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:6px;font-weight:500;}
-  .field input[type=text],.field input[type=password],.field textarea,.field input[type=date],.field input[type=time]{width:100%;border:1px solid var(--line-strong);border-radius:10px;padding:10px 12px;font-size:14.5px;font-family:var(--font-body);color:var(--ink);background:var(--surface-alt);}
+  .field input[type=text],.field input[type=password],.field textarea,.field input[type=date],.field input[type=time],.field select{width:100%;border:1px solid var(--line-strong);border-radius:10px;padding:10px 12px;font-size:14.5px;font-family:var(--font-body);color:var(--ink);background:var(--surface-alt);}
   .field textarea{resize:vertical;min-height:64px;}
   .row-2{display:flex;gap:10px;}
   .row-2 .field{flex:1;}
@@ -92,56 +97,40 @@
   .prio-opt.selected{opacity:1;border-color:rgba(0,0,0,.25);}
   .modal-actions{display:flex;gap:10px;margin-top:20px;}
   .btn-secondary{flex:1;background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);padding:12px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
-  .btn-save{flex:2;background:var(--navy);border:none;color:#fff;padding:12px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
-  .fab{position:fixed;right:18px;bottom:18px;z-index:40;width:54px;height:54px;border-radius:50%;background:var(--navy);color:#fff;border:none;font-size:24px;box-shadow:0 6px 20px rgba(34,49,74,.35);cursor:pointer;}
+  .btn-save{flex:2;background:var(--accent);border:none;color:#fff;padding:12px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
+  .btn-save:hover{background:var(--accent-strong);}
+  .fab{position:fixed;right:18px;bottom:18px;z-index:40;width:54px;height:54px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:24px;box-shadow:0 6px 20px rgba(55,138,221,.35);cursor:pointer;}
   .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:300;opacity:0;pointer-events:none;transition:opacity .2s ease;}
   .toast.show{opacity:1;}
-  .auth-screen{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px;}
+  .auth-screen{position:fixed;inset:0;background:var(--surface-alt);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px;}
   .auth-screen.hide{display:none;}
-  .auth-box{background:var(--surface);border-radius:18px;padding:28px 24px;width:100%;max-width:380px;box-shadow:var(--shadow);}
-  .auth-box .brand-mark{color:var(--navy);margin-bottom:4px;}
+  .auth-box{background:var(--surface);border-radius:18px;padding:28px 24px;width:100%;max-width:380px;box-shadow:var(--shadow);border:0.5px solid var(--line);}
+  .auth-box .brand-mark{color:var(--ink);margin-bottom:4px;font-size:20px;}
   .auth-sub{font-size:13px;color:var(--ink-soft);margin:0 0 20px;}
   .auth-error{color:var(--danger-ink);font-size:12.5px;margin:-6px 0 14px;min-height:16px;}
   #app-root{display:none;}
-  @media (max-width:480px){.stat-chip{min-width:100px;}.legend{display:none;}}
-
-  .admin-link{background:#8A6300;border-color:#8A6300;}
-  .bootstrap-banner{background:#FDF1D8;border:1px solid #F0D89A;color:#8A6300;font-size:12px;padding:8px 12px;border-radius:10px;max-width:920px;margin:10px auto 0;display:flex;align-items:center;justify-content:space-between;gap:10px;}
-  .bootstrap-banner button{background:#8A6300;color:#fff;border:none;padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--font-body);}
-  .group-section{margin-top:8px;}
-  .group-section-title{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-family:var(--font-display);font-size:15px;font-weight:700;}
-  .group-tag{font-family:var(--font-mono);font-size:11px;background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);padding:2px 8px;border-radius:20px;}
-  .urgent-btn{background:#B23A3A !important;color:#fff !important;}
-  .created-by{font-size:11px;color:var(--ink-faint);margin-top:4px;}
-
-  .drawer-overlay{position:fixed;inset:0;background:rgba(20,26,38,.4);display:none;z-index:600;}
-  .drawer-overlay.show{display:block;}
-  .drawer-panel{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:92vw;background:var(--surface);box-shadow:-8px 0 24px rgba(0,0,0,.15);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .2s ease;}
-  .drawer-overlay.show .drawer-panel{transform:translateX(0);}
-  .drawer-header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line);}
-  .drawer-title{font-family:var(--font-display);font-weight:700;font-size:16px;}
-  .drawer-close-btn{background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink-soft);}
-  .drawer-tabs{display:flex;border-bottom:1px solid var(--line);}
-  .drawer-tab{flex:1;background:none;border:none;padding:12px 6px;font-size:12px;font-weight:500;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;font-family:var(--font-body);}
-  .drawer-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
-  .drawer-content{flex:1;overflow-y:auto;padding:16px 18px;}
-  .drawer-pane{display:none;}
-  .drawer-pane.active{display:block;}
-  .settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);gap:10px;}
-  .settings-row:last-child{border-bottom:none;}
-  .settings-label{font-size:13.5px;color:var(--ink);}
-  .settings-sub{font-size:11.5px;color:var(--ink-faint);margin-top:2px;}
   .remind-badge{font-family:var(--font-mono);font-size:10.5px;background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);padding:1px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:3px;}
-  .drawer-field{margin-bottom:14px;}
-  .drawer-field label{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:5px;font-weight:500;}
-  .drawer-field select, .drawer-field input{width:100%;border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;font-size:13.5px;font-family:var(--font-body);background:var(--surface-alt);color:var(--ink);}
+  .created-by{font-size:11px;color:var(--ink-faint);margin-top:4px;}
+  .group-selector-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .group-selector-row select{border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;font-size:13.5px;font-family:var(--font-body);background:var(--surface-alt);color:var(--ink);}
+  .checkbox-list{display:flex;flex-wrap:wrap;gap:8px;}
+  .checkbox-pill{display:flex;align-items:center;gap:6px;border:1px solid var(--line-strong);border-radius:20px;padding:6px 12px;font-size:12.5px;cursor:pointer;background:var(--surface-alt);}
+  .checkbox-pill input{width:auto;margin:0;}
+  .checkbox-pill.checked{background:var(--accent-bg);border-color:var(--accent);color:var(--accent-strong);}
+  .settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);gap:10px;}
+  .settings-row:last-child{border-bottom:none;}
+  .settings-label{font-size:14px;color:var(--ink);font-weight:500;}
+  .settings-sub{font-size:12px;color:var(--ink-faint);margin-top:2px;}
+  .nudge-btn{width:100%;margin-top:8px;background:none;border:1px solid var(--line-strong);color:var(--ink-soft);padding:7px 10px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:5px;}
+  .nudge-btn:hover{background:var(--danger-bg);border-color:var(--danger-line);color:var(--danger-ink);}
+  .owner-tag{font-family:var(--font-mono);font-size:10.5px;background:var(--accent-bg);color:var(--accent-strong);padding:1px 8px;border-radius:20px;}
 </style>
 </head>
 <body>
 
 <div class="auth-screen" id="auth-screen">
   <div class="auth-box">
-    <div class="brand-mark"><span class="dot"></span>TASKLINE</div>
+    <div class="brand-mark">TASKLINE</div>
     <p class="auth-sub" id="auth-sub">ログインしてください</p>
     <div class="field">
       <label for="auth-username">ユーザーID</label>
@@ -157,165 +146,131 @@
   </div>
 </div>
 
-<div class="drawer-overlay" id="drawer-overlay">
-  <div class="drawer-panel">
-    <div class="drawer-header">
-      <div class="drawer-title">メニュー</div>
-      <button class="drawer-close-btn" id="drawer-close-btn">✕</button>
-    </div>
-    <div class="drawer-tabs">
-      <button class="drawer-tab active" data-tab="settings">設定</button>
-      <button class="drawer-tab" id="tab-btn-viewer" data-tab="viewer" style="display:none;">個人タスク</button>
-      <button class="drawer-tab" id="tab-btn-mgtc" data-tab="mgtc" style="display:none;">グループタスク作成</button>
-    </div>
-    <div class="drawer-content">
-      <div class="drawer-pane active" id="pane-settings">
-        <div class="settings-row">
-          <div>
-            <div class="settings-label" id="settings-username-label">ログイン中</div>
-            <div class="settings-sub" id="settings-role-label"></div>
-          </div>
-        </div>
-        <div class="settings-row">
-          <div>
-            <div class="settings-label">通知</div>
-            <div class="settings-sub" id="settings-notif-status">確認中…</div>
-          </div>
-          <button class="btn-secondary" id="settings-notif-btn" style="flex:none;padding:8px 14px;">有効にする</button>
-        </div>
-        <div class="settings-row" id="settings-admin-row" style="display:none;">
-          <div class="settings-label">管理画面</div>
-          <a class="btn-secondary" href="/admin.html" style="flex:none;padding:8px 14px;text-decoration:none;">開く</a>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label">ログアウト</div>
-          <button class="btn-secondary" id="drawer-logout-btn" style="flex:none;padding:8px 14px;">ログアウト</button>
-        </div>
-      </div>
-
-      <div class="drawer-pane" id="pane-viewer">
-        <div class="drawer-field">
-          <label for="viewer-person-select">表示する人</label>
-          <select id="viewer-person-select"><option value="">選択してください</option></select>
-        </div>
-        <div id="viewer-task-list"></div>
-      </div>
-
-      <div class="drawer-pane" id="pane-mgtc">
-        <form id="mgtc-form">
-          <div class="drawer-field">
-            <label for="mgtc-group-select">グループ</label>
-            <select id="mgtc-group-select" required><option value="">選択してください</option></select>
-          </div>
-          <div class="drawer-field">
-            <label for="mgtc-name">タスク名</label>
-            <input type="text" id="mgtc-name" placeholder="例：月次レポート提出" required>
-          </div>
-          <div class="drawer-field">
-            <label for="mgtc-detail">詳細</label>
-            <input type="text" id="mgtc-detail" placeholder="詳細（任意）">
-          </div>
-          <div class="drawer-field">
-            <label for="mgtc-date">期日</label>
-            <input type="date" id="mgtc-date" required>
-          </div>
-          <div class="drawer-field">
-            <label for="mgtc-time">時間</label>
-            <input type="time" id="mgtc-time" required>
-          </div>
-          <div class="drawer-field">
-            <label>優先順位</label>
-            <div class="prio-select" id="mgtc-prio-select">
-              <div class="prio-opt" data-p="1" style="background:#3B82D6">1</div>
-              <div class="prio-opt" data-p="2" style="background:#1FA089">2</div>
-              <div class="prio-opt selected" data-p="3" style="background:#E0A426">3</div>
-              <div class="prio-opt" data-p="4" style="background:#DB7A2A">4</div>
-              <div class="prio-opt" data-p="5" style="background:#D1483F">5</div>
-            </div>
-          </div>
-          <div class="drawer-field">
-            <label for="mgtc-assignee">担当者（任意）</label>
-            <select id="mgtc-assignee"><option value="">（グループ全員）</option></select>
-          </div>
-          <div class="drawer-field">
-            <label for="mgtc-remind">事前通知</label>
-            <select id="mgtc-remind">
-              <option value="">なし</option>
-              <option value="5">5分前</option>
-              <option value="30">30分前</option>
-              <option value="60">1時間前</option>
-              <option value="1440">1日前</option>
-            </select>
-          </div>
-          <div class="drawer-field">
-            <label style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--danger-ink);">
-              <input type="checkbox" id="mgtc-urgent" style="width:auto;">
-              🔥 作成と同時に至急通知を送る
-            </label>
-          </div>
-          <button type="submit" class="btn-save" style="width:100%;">グループタスクを作成</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div id="app-root">
 <header class="topbar">
   <div class="topbar-row">
-    <div>
-      <div class="brand-mark"><span class="dot"></span>TASKLINE</div>
-      <div class="brand-sub">タスク管理一覧</div>
-    </div>
-    <div class="topbar-actions">
-      <button class="icon-btn" id="menu-btn" title="メニュー">☰</button>
-      <a class="icon-btn admin-link" id="admin-link" href="/admin.html" title="管理画面" style="display:none;text-decoration:none;">⚙️</a>
-      <button class="icon-btn" id="notif-btn" title="通知を有効にする">🔔</button>
-    </div>
+    <div class="brand-mark">TASKLINE</div>
+    <button class="avatar-circle" id="avatar-btn" title="設定">A</button>
   </div>
-  <div class="status-line">
-    <span id="status-line">通知を確認中…</span>
-    <button class="logout-link" id="logout-btn">ログアウト</button>
-  </div>
-  <div id="bootstrap-banner-wrap"></div>
-  <div class="stat-row">
-    <div class="stat-chip overdue"><div class="num" id="stat-overdue">0</div><div class="lbl">期限切れ</div></div>
-    <div class="stat-chip"><div class="num" id="stat-today">0</div><div class="lbl">本日期限</div></div>
-    <div class="stat-chip"><div class="num" id="stat-upcoming">0</div><div class="lbl">今後の予定</div></div>
-    <div class="stat-chip"><div class="num" id="stat-done">0</div><div class="lbl">完了</div></div>
-  </div>
+  <div class="status-line" id="status-line">通知を確認中…</div>
 </header>
 
-<main>
-  <div class="toolbar">
-    <div class="legend">
-      優先度
-      <div class="legend-bar">
-        <span style="background:#3B82D6"></span><span style="background:#1FA089"></span>
-        <span style="background:#E0A426"></span><span style="background:#DB7A2A"></span>
-        <span style="background:#D1483F"></span>
-      </div>
-      低 → 高
-    </div>
-    <button class="btn-primary" id="open-add-btn">＋ 新規タスク</button>
-  </div>
-  <div id="task-groups"></div>
+<div id="bootstrap-banner-wrap"></div>
 
-  <div class="group-section" id="group-section" style="display:none;">
-    <div class="group-section-title">
-      👥 グループタスク <span class="group-tag" id="group-name-tag"></span>
-      <button class="btn-primary" id="open-add-group-task-btn" style="margin-left:auto;padding:7px 14px;font-size:13px;">＋ グループタスク</button>
+<nav class="tab-bar">
+  <div class="tab-bar-inner">
+    <button class="tab-btn active" data-tab="personal">個人タスク</button>
+    <button class="tab-btn" data-tab="group">グループタスク</button>
+    <button class="tab-btn" id="tab-btn-review" data-tab="review" style="display:none;">タスク確認</button>
+    <button class="tab-btn" data-tab="settings">設定</button>
+  </div>
+</nav>
+
+<main>
+
+  <div class="tab-panel active" id="tab-personal">
+    <div class="stat-row">
+      <div class="stat-chip overdue"><div class="num" id="stat-overdue">0</div><div class="lbl">期限切れ</div></div>
+      <div class="stat-chip"><div class="num" id="stat-today">0</div><div class="lbl">本日期限</div></div>
+      <div class="stat-chip"><div class="num" id="stat-upcoming">0</div><div class="lbl">今後の予定</div></div>
+      <div class="stat-chip"><div class="num" id="stat-done">0</div><div class="lbl">完了</div></div>
     </div>
+    <div class="toolbar">
+      <div class="legend">
+        優先度
+        <div class="legend-bar">
+          <span style="background:#3B82D6"></span><span style="background:#1FA089"></span>
+          <span style="background:#E0A426"></span><span style="background:#DB7A2A"></span>
+          <span style="background:#D1483F"></span>
+        </div>
+        低 → 高
+      </div>
+      <button class="btn-primary" id="open-add-btn">＋ 新規タスク</button>
+    </div>
+    <div id="task-groups"></div>
+  </div>
+
+  <div class="tab-panel" id="tab-group">
+    <div id="group-selector-wrap"></div>
+    <div class="group-head" style="margin-bottom:14px;">
+      <h2>グループタスクを作成</h2>
+    </div>
+    <form id="group-task-form" style="margin-bottom:26px;">
+      <div class="field"><label for="gt-name">タスク名</label><input type="text" id="gt-name" placeholder="例：週次報告の提出" required></div>
+      <div class="field"><label for="gt-detail">詳細</label><textarea id="gt-detail" placeholder="タスクの詳細を入力"></textarea></div>
+      <div class="row-2">
+        <div class="field"><label for="gt-date">期日</label><input type="date" id="gt-date" required></div>
+        <div class="field"><label for="gt-time">時間</label><input type="time" id="gt-time" required></div>
+      </div>
+      <div class="field">
+        <label>優先順位</label>
+        <div class="prio-select" id="gt-prio-select">
+          <div class="prio-opt" data-p="1" style="background:#3B82D6">1</div>
+          <div class="prio-opt" data-p="2" style="background:#1FA089">2</div>
+          <div class="prio-opt selected" data-p="3" style="background:#E0A426">3</div>
+          <div class="prio-opt" data-p="4" style="background:#DB7A2A">4</div>
+          <div class="prio-opt" data-p="5" style="background:#D1483F">5</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>担当者（複数選択可、未選択でグループ全員）</label>
+        <div class="checkbox-list" id="gt-assignee-list"></div>
+      </div>
+      <div class="field">
+        <label for="gt-remind">事前通知</label>
+        <select id="gt-remind">
+          <option value="">なし</option>
+          <option value="5">5分前</option>
+          <option value="30">30分前</option>
+          <option value="60">1時間前</option>
+          <option value="1440">1日前</option>
+        </select>
+      </div>
+      <div class="field" id="gt-urgent-field" style="display:none;">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--danger-ink);">
+          <input type="checkbox" id="gt-urgent" style="width:auto;">
+          🔥 作成と同時に至急通知を送る
+        </label>
+      </div>
+      <button type="submit" class="btn-save" style="width:100%;">グループタスクを作成</button>
+    </form>
+    <div class="group-head"><h2>タスク一覧</h2></div>
     <div id="group-task-list"></div>
   </div>
 
-  <div class="group-section" id="assign-section" style="display:none;">
-    <div class="group-section-title">
-      📌 個別タスクを割り当てる
-      <button class="btn-primary" id="open-assign-task-btn" style="margin-left:auto;padding:7px 14px;font-size:13px;">＋ 個別タスクを割り当てる</button>
+  <div class="tab-panel" id="tab-review">
+    <div class="group-head">
+      <h2>表示する対象者</h2>
     </div>
-    <p style="font-size:12px;color:var(--ink-soft);margin-top:-6px;">相手のタスク一覧に直接追加されます（自分には表示されません）。</p>
+    <div class="checkbox-list" id="review-people-list" style="margin-bottom:20px;"></div>
+    <button class="btn-primary" id="open-assign-task-btn" style="margin-bottom:20px;">＋ 個別タスクを割り当てる</button>
+    <div id="review-task-list"></div>
   </div>
+
+  <div class="tab-panel" id="tab-settings">
+    <div class="settings-row">
+      <div>
+        <div class="settings-label" id="settings-username-label">ログイン中</div>
+        <div class="settings-sub" id="settings-role-label"></div>
+      </div>
+    </div>
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">通知</div>
+        <div class="settings-sub" id="settings-notif-status">確認中…</div>
+      </div>
+      <button class="btn-secondary" id="settings-notif-btn" style="flex:none;padding:8px 14px;">有効にする</button>
+    </div>
+    <div class="settings-row" id="settings-admin-row" style="display:none;">
+      <div class="settings-label">管理画面</div>
+      <a class="btn-secondary" href="/admin.html" style="flex:none;padding:8px 14px;text-decoration:none;">開く</a>
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">ログアウト</div>
+      <button class="btn-secondary" id="settings-logout-btn" style="flex:none;padding:8px 14px;">ログアウト</button>
+    </div>
+  </div>
+
 </main>
 
 <button class="fab" id="fab-add-btn" title="新規タスク">＋</button>
@@ -352,54 +307,6 @@
       </div>
       <div class="modal-actions">
         <button type="button" class="btn-secondary" id="cancel-btn">キャンセル</button>
-        <button type="submit" class="btn-save">保存する</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<div class="overlay" id="group-task-overlay">
-  <div class="modal">
-    <h3>グループタスクを追加</h3>
-    <form id="group-task-form">
-      <div class="field"><label for="gt-name">タスク名</label><input type="text" id="gt-name" placeholder="例：週次報告の提出" required></div>
-      <div class="field"><label for="gt-detail">詳細</label><textarea id="gt-detail" placeholder="タスクの詳細を入力"></textarea></div>
-      <div class="row-2">
-        <div class="field"><label for="gt-date">期日</label><input type="date" id="gt-date" required></div>
-        <div class="field"><label for="gt-time">時間</label><input type="time" id="gt-time" required></div>
-      </div>
-      <div class="field">
-        <label>優先順位</label>
-        <div class="prio-select" id="gt-prio-select">
-          <div class="prio-opt" data-p="1" style="background:#3B82D6">1</div>
-          <div class="prio-opt" data-p="2" style="background:#1FA089">2</div>
-          <div class="prio-opt selected" data-p="3" style="background:#E0A426">3</div>
-          <div class="prio-opt" data-p="4" style="background:#DB7A2A">4</div>
-          <div class="prio-opt" data-p="5" style="background:#D1483F">5</div>
-        </div>
-      </div>
-      <div class="field">
-        <label for="gt-assignee">担当者（任意）</label>
-        <select id="gt-assignee"><option value="">（グループ全員）</option></select>
-      </div>
-      <div class="field">
-        <label for="gt-remind">事前通知</label>
-        <select id="gt-remind">
-          <option value="">なし</option>
-          <option value="5">5分前</option>
-          <option value="30">30分前</option>
-          <option value="60">1時間前</option>
-          <option value="1440">1日前</option>
-        </select>
-      </div>
-      <div class="field" id="gt-urgent-field" style="display:none;">
-        <label style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--danger-ink);">
-          <input type="checkbox" id="gt-urgent" style="width:auto;">
-          🔥 作成と同時に至急通知を送る（責任者・管理者専用）
-        </label>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn-secondary" id="gt-cancel-btn">キャンセル</button>
         <button type="submit" class="btn-save">保存する</button>
       </div>
     </form>
@@ -506,7 +413,7 @@ function logout(){
   authUsername = null;
   showAuthScreen();
 }
-document.getElementById('logout-btn').addEventListener('click', logout);
+document.getElementById('settings-logout-btn').addEventListener('click', logout);
 
 document.getElementById('auth-toggle-btn').addEventListener('click', ()=>{
   authMode = authMode === 'login' ? 'signup' : 'login';
@@ -539,7 +446,24 @@ document.getElementById('auth-submit-btn').addEventListener('click', async ()=>{
   }catch(err){ errEl.textContent = '通信エラーが発生しました'; }
 });
 
-/* ---------- API ---------- */
+/* ---------- Tab switching ---------- */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', ()=>{
+    if(btn.style.display === 'none') return;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.getElementById('fab-add-btn').style.display = tab === 'personal' ? 'flex' : 'none';
+    if(tab === 'group') loadGroupTab();
+    if(tab === 'review') loadReviewTab();
+  });
+});
+document.getElementById('avatar-btn').addEventListener('click', ()=>{
+  document.querySelector('.tab-btn[data-tab="settings"]').click();
+});
+
+/* ---------- Personal task API ---------- */
 async function apiGetTasks(){
   const res = await fetch('/api/tasks', { headers: authHeaders() });
   if(res.status === 401){ logout(); throw new Error('ログインが必要です'); }
@@ -575,7 +499,7 @@ async function refreshTasks(){
   }
 }
 
-/* ---------- Rendering ---------- */
+/* ---------- Personal task rendering ---------- */
 function groupTasks(){
   const now = new Date();
   const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23,59,59);
@@ -630,7 +554,7 @@ function render(){
   container.innerHTML = html || `<div class="empty-state">タスクはまだありません。右下の「＋」から新規タスクを追加してください。</div>`;
 }
 
-/* ---------- Modal ---------- */
+/* ---------- Personal task modal ---------- */
 const overlay = document.getElementById('task-overlay');
 const form = document.getElementById('task-form');
 
@@ -658,7 +582,7 @@ function openModal(task){
 }
 function closeModal(){ overlay.classList.remove('show'); form.reset(); editingId = null; }
 function updatePrioUI(){
-  document.querySelectorAll('.prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === selectedPriority));
+  document.querySelectorAll('#prio-select .prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === selectedPriority));
 }
 document.getElementById('prio-select').addEventListener('click', e=>{
   const opt = e.target.closest('.prio-opt'); if(!opt) return;
@@ -722,27 +646,27 @@ function urlBase64ToUint8Array(base64String){
   return outputArray;
 }
 
-const notifBtn = document.getElementById('notif-btn');
-const statusLine = document.getElementById('status-line');
 let swRegistration = null;
+let pushActive = false;
 
 async function initPush(){
+  const statusLine = document.getElementById('status-line');
   if(!('serviceWorker' in navigator) || !('PushManager' in window)){
     statusLine.textContent = 'このブラウザはプッシュ通知に対応していません。';
-    notifBtn.style.display = 'none';
     return;
   }
   swRegistration = await navigator.serviceWorker.register('/service-worker.js');
   const existing = await swRegistration.pushManager.getSubscription();
   if(existing && Notification.permission === 'granted'){
-    notifBtn.classList.add('active');
+    pushActive = true;
     statusLine.textContent = `ようこそ、${authUsername}さん。通知は有効です。`;
     try{
       await fetch('/api/subscribe', { method:'POST', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify(existing) });
     }catch(e){}
   } else {
-    statusLine.textContent = `ようこそ、${authUsername}さん。🔔ボタンから通知を有効にしてください。`;
+    statusLine.textContent = `ようこそ、${authUsername}さん。通知は未設定です。`;
   }
+  updateSettingsNotifUI();
 }
 
 async function subscribePush(){
@@ -762,24 +686,31 @@ async function subscribePush(){
     applicationServerKey: urlBase64ToUint8Array(publicKey)
   });
   await fetch('/api/subscribe', { method:'POST', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify(sub) });
-  notifBtn.classList.add('active');
-  statusLine.textContent = `ようこそ、${authUsername}さん。通知は有効です。`;
+  pushActive = true;
+  document.getElementById('status-line').textContent = `ようこそ、${authUsername}さん。通知は有効です。`;
   showToast('通知を有効にしました');
+  updateSettingsNotifUI();
 }
 
-notifBtn.addEventListener('click', async ()=>{
-  try{
-    if(notifBtn.classList.contains('active')){
-      showToast('通知は有効です');
-      return;
-    }
-    await subscribePush();
-  }catch(err){ showToast('通知の設定に失敗しました：' + err.message); }
+function updateSettingsNotifUI(){
+  const btn = document.getElementById('settings-notif-btn');
+  const statusEl = document.getElementById('settings-notif-status');
+  if(pushActive){
+    statusEl.textContent = '有効';
+    btn.textContent = '有効です';
+  } else {
+    statusEl.textContent = '未設定';
+    btn.textContent = '有効にする';
+  }
+}
+document.getElementById('settings-notif-btn').addEventListener('click', async ()=>{
+  if(pushActive){ showToast('通知は有効です'); return; }
+  try{ await subscribePush(); }
+  catch(err){ showToast('通知の設定に失敗しました：' + err.message); }
 });
 
-/* ---------- Admin / Group ---------- */
+/* ---------- Admin / role info ---------- */
 let meInfo = null;
-let groupTaskItems = [];
 
 async function fetchMe(){
   try{
@@ -792,8 +723,6 @@ async function fetchMe(){
 
 function renderMeUI(){
   if(!meInfo) return;
-  const adminLink = document.getElementById('admin-link');
-  adminLink.style.display = meInfo.isAdmin ? 'flex' : 'none';
 
   const bannerWrap = document.getElementById('bootstrap-banner-wrap');
   if(!meInfo.hasAnyAdmin){
@@ -806,18 +735,7 @@ function renderMeUI(){
     bannerWrap.innerHTML = '';
   }
 
-  const groupSection = document.getElementById('group-section');
-  if(meInfo.groupId){
-    groupSection.style.display = 'block';
-    document.getElementById('group-name-tag').textContent = meInfo.groupName || '';
-    loadGroupTasks();
-  } else {
-    groupSection.style.display = 'none';
-  }
-
-  const assignSection = document.getElementById('assign-section');
-  assignSection.style.display = (meInfo.isAdmin || meInfo.isLeader) ? 'block' : 'none';
-
+  document.getElementById('avatar-btn').textContent = meInfo.username.slice(0,1).toUpperCase();
   document.getElementById('settings-username-label').textContent = `ログイン中：${meInfo.username}`;
   const roles = [];
   if(meInfo.isAdmin) roles.push('管理者');
@@ -827,8 +745,7 @@ function renderMeUI(){
   document.getElementById('settings-admin-row').style.display = meInfo.isAdmin ? 'flex' : 'none';
 
   const canManage = meInfo.isAdmin || meInfo.isLeader;
-  document.getElementById('tab-btn-viewer').style.display = canManage ? 'block' : 'none';
-  document.getElementById('tab-btn-mgtc').style.display = canManage ? 'block' : 'none';
+  document.getElementById('tab-btn-review').style.display = canManage ? 'block' : 'none';
 }
 
 async function becomeAdmin(){
@@ -841,19 +758,95 @@ async function becomeAdmin(){
   }catch(e){ showToast('通信エラーが発生しました'); }
 }
 
-async function loadGroupTasks(){
-  if(!meInfo || !meInfo.groupId) return;
+/* ---------- Group tab ---------- */
+let currentGroupId = null;
+let currentGroupTasks = [];
+let gtSelectedPriority = 3;
+let currentGroupCanManage = false;
+
+async function loadGroupTab(){
+  const wrap = document.getElementById('group-selector-wrap');
+  if(meInfo.isAdmin){
+    wrap.innerHTML = `<div class="group-selector-row"><label style="font-size:12.5px;color:var(--ink-soft);">グループ：</label><select id="group-selector"></select></div>`;
+    const sel = document.getElementById('group-selector');
+    try{
+      const res = await fetch('/api/people?type=managed-groups', { headers: authHeaders() });
+      const data = await res.json();
+      Object.entries(data.groups).forEach(([groupId, g]) => {
+        const opt = document.createElement('option');
+        opt.value = groupId; opt.textContent = g.name;
+        sel.appendChild(opt);
+      });
+      if(Object.keys(data.groups).length === 0){
+        wrap.innerHTML = `<div class="empty-state">まだグループがありません。管理画面から作成してください。</div>`;
+        document.getElementById('group-task-form').style.display = 'none';
+        return;
+      }
+    }catch(e){}
+    document.getElementById('group-task-form').style.display = 'block';
+    currentGroupId = sel.value;
+    sel.addEventListener('change', async ()=>{
+      currentGroupId = sel.value;
+      currentGroupCanManage = true;
+      await populateGroupAssigneeOptions();
+      await loadGroupTaskList();
+      syncUrgentFieldVisibility();
+    });
+    currentGroupCanManage = true;
+    await populateGroupAssigneeOptions();
+    await loadGroupTaskList();
+    syncUrgentFieldVisibility();
+  } else if(meInfo.groupId){
+    wrap.innerHTML = `<p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;">グループ：<strong style="color:var(--ink);">${escapeHTML(meInfo.groupName||'')}</strong></p>`;
+    document.getElementById('group-task-form').style.display = 'block';
+    currentGroupId = meInfo.groupId;
+    currentGroupCanManage = meInfo.isLeader;
+    await populateGroupAssigneeOptions();
+    await loadGroupTaskList();
+    syncUrgentFieldVisibility();
+  } else {
+    wrap.innerHTML = `<div class="empty-state">所属しているグループがありません。</div>`;
+    document.getElementById('group-task-form').style.display = 'none';
+    document.getElementById('group-task-list').innerHTML = '';
+  }
+}
+
+function syncUrgentFieldVisibility(){
+  document.getElementById('gt-urgent-field').style.display = currentGroupCanManage ? 'block' : 'none';
+}
+
+async function populateGroupAssigneeOptions(){
+  const container = document.getElementById('gt-assignee-list');
+  container.innerHTML = '';
+  if(!currentGroupId) return;
   try{
-    const res = await fetch(`/api/group-tasks?groupId=${encodeURIComponent(meInfo.groupId)}`, { headers: authHeaders() });
+    const res = await fetch(`/api/people?type=group-members&groupId=${encodeURIComponent(currentGroupId)}`, { headers: authHeaders() });
     if(!res.ok) return;
-    groupTaskItems = await res.json();
-    renderGroupTasks();
+    const data = await res.json();
+    data.members.forEach(name => {
+      const label = document.createElement('label');
+      label.className = 'checkbox-pill';
+      label.innerHTML = `<input type="checkbox" value="${escapeHTML(name)}">${escapeHTML(name)}`;
+      const input = label.querySelector('input');
+      input.addEventListener('change', ()=> label.classList.toggle('checked', input.checked));
+      container.appendChild(label);
+    });
+  }catch(e){}
+}
+
+async function loadGroupTaskList(){
+  if(!currentGroupId) return;
+  try{
+    const res = await fetch(`/api/group-tasks?groupId=${encodeURIComponent(currentGroupId)}`, { headers: authHeaders() });
+    if(!res.ok) return;
+    currentGroupTasks = await res.json();
+    renderGroupTaskList();
   }catch(e){}
 }
 
 function groupTaskCardHTML(t){
   const color = priorityColor(t.priority);
-  const canUrgent = meInfo && (meInfo.isAdmin || meInfo.isLeader);
+  const assigneeText = (t.assignedTo && t.assignedTo.length) ? t.assignedTo.join('、') : 'グループ全員';
   return `
   <div class="task-card ${t.completed?'done':''}" data-id="${t.id}">
     <div class="p-bar" style="background:${color}"></div>
@@ -864,23 +857,23 @@ function groupTaskCardHTML(t){
       </div>
       <div class="task-meta"><div class="due-pill">🕒 ${fmtDue(t.dueAt)}</div>${t.remindBefore ? `<span class="remind-badge">⏰ ${remindLabelJs(t.remindBefore)}</span>` : ''}</div>
       ${t.detail ? `<div class="task-detail">${escapeHTML(t.detail)}</div>` : ''}
-      <div class="created-by">作成者：${escapeHTML(t.createdBy || '')}${t.assignedTo ? ` ／ 担当：${escapeHTML(t.assignedTo)}` : ' ／ 担当：グループ全員'}</div>
+      <div class="created-by">作成者：${escapeHTML(t.createdBy || '')} ／ 担当：${escapeHTML(assigneeText)}</div>
     </div>
     <div class="task-actions">
-      ${canUrgent ? `<button class="urgent-btn" data-gaction="urgent" title="今すぐ至急通知">🔥</button>` : ''}
+      ${currentGroupCanManage ? `<button class="urgent-btn" data-gaction="urgent" title="今すぐ至急通知" style="color:#B23A3A;">🔥</button>` : ''}
       <button class="complete-btn" data-gaction="complete" title="${t.completed?'未完了に戻す':'完了にする'}">${t.completed?'↺':'✓'}</button>
       <button class="delete-btn" data-gaction="delete" title="削除">🗑</button>
     </div>
   </div>`;
 }
 
-function renderGroupTasks(){
+function renderGroupTaskList(){
   const container = document.getElementById('group-task-list');
-  if(groupTaskItems.length === 0){
+  if(currentGroupTasks.length === 0){
     container.innerHTML = `<div class="empty-state">グループタスクはまだありません。</div>`;
     return;
   }
-  const sorted = [...groupTaskItems].sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
+  const sorted = [...currentGroupTasks].sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
   container.innerHTML = sorted.map(groupTaskCardHTML).join('');
 }
 
@@ -888,18 +881,19 @@ document.getElementById('group-task-list').addEventListener('click', async e=>{
   const btn = e.target.closest('button[data-gaction]'); if(!btn) return;
   const card = e.target.closest('.task-card');
   const id = card.dataset.id;
-  const task = groupTaskItems.find(t => t.id === id); if(!task) return;
+  const task = currentGroupTasks.find(t => t.id === id); if(!task) return;
 
   if(btn.dataset.gaction === 'complete'){
     await groupTaskPatch({ id, completed: !task.completed });
     showToast(!task.completed ? '対応完了にしました' : '未完了に戻しました');
   } else if(btn.dataset.gaction === 'delete'){
     if(confirm(`「${task.name}」を削除しますか？`)){
-      await groupTaskDelete(id);
+      await fetch(`/api/group-tasks?groupId=${encodeURIComponent(currentGroupId)}&id=${encodeURIComponent(id)}`, { method:'DELETE', headers: authHeaders() });
+      await loadGroupTaskList();
       showToast('削除しました');
     }
   } else if(btn.dataset.gaction === 'urgent'){
-    if(confirm(`「${task.name}」について、グループ全員に至急通知を送りますか？`)){
+    if(confirm(`「${task.name}」について、至急通知を送りますか？`)){
       await groupTaskPatch({ id, sendUrgent: true });
       showToast('至急通知を送信しました');
     }
@@ -908,85 +902,131 @@ document.getElementById('group-task-list').addEventListener('click', async e=>{
 
 async function groupTaskPatch(payload){
   try{
-    await fetch('/api/group-tasks', { method:'PATCH', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify({ groupId: meInfo.groupId, ...payload }) });
-    await loadGroupTasks();
-  }catch(e){ showToast('通信エラーが発生しました'); }
-}
-async function groupTaskDelete(id){
-  try{
-    await fetch(`/api/group-tasks?groupId=${encodeURIComponent(meInfo.groupId)}&id=${encodeURIComponent(id)}`, { method:'DELETE', headers: authHeaders() });
-    await loadGroupTasks();
+    await fetch('/api/group-tasks', { method:'PATCH', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify({ groupId: currentGroupId, ...payload }) });
+    await loadGroupTaskList();
   }catch(e){ showToast('通信エラーが発生しました'); }
 }
 
-/* ---------- Group task modal ---------- */
-const groupTaskOverlay = document.getElementById('group-task-overlay');
-const groupTaskForm = document.getElementById('group-task-form');
-let gtSelectedPriority = 3;
-
-async function populateGroupAssigneeOptions(){
-  const sel = document.getElementById('gt-assignee');
-  sel.innerHTML = '<option value="">（グループ全員）</option>';
-  if(!meInfo || !meInfo.groupId) return;
-  try{
-    const res = await fetch(`/api/people?type=group-members&groupId=${encodeURIComponent(meInfo.groupId)}`, { headers: authHeaders() });
-    if(!res.ok) return;
-    const data = await res.json();
-    data.members.forEach(name => {
-      const opt = document.createElement('option');
-      opt.value = name; opt.textContent = name;
-      sel.appendChild(opt);
-    });
-  }catch(e){}
-}
-
-document.getElementById('open-add-group-task-btn').addEventListener('click', async ()=>{
-  groupTaskForm.reset();
-  gtSelectedPriority = 3;
-  document.querySelectorAll('#gt-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === 3));
-  const canUrgent = meInfo && (meInfo.isAdmin || meInfo.isLeader);
-  document.getElementById('gt-urgent-field').style.display = canUrgent ? 'block' : 'none';
-  document.getElementById('gt-urgent').checked = false;
-  document.getElementById('gt-remind').value = '';
-  await populateGroupAssigneeOptions();
-  const now = new Date(); now.setMinutes(now.getMinutes()+30);
-  const pad = n => String(n).padStart(2,'0');
-  document.getElementById('gt-date').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
-  document.getElementById('gt-time').value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  groupTaskOverlay.classList.add('show');
-});
-document.getElementById('gt-cancel-btn').addEventListener('click', ()=> groupTaskOverlay.classList.remove('show'));
-groupTaskOverlay.addEventListener('click', e=>{ if(e.target === groupTaskOverlay) groupTaskOverlay.classList.remove('show'); });
 document.getElementById('gt-prio-select').addEventListener('click', e=>{
   const opt = e.target.closest('.prio-opt'); if(!opt) return;
   gtSelectedPriority = Number(opt.dataset.p);
   document.querySelectorAll('#gt-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', el === opt));
 });
 
-groupTaskForm.addEventListener('submit', async e=>{
+document.getElementById('group-task-form').addEventListener('submit', async e=>{
   e.preventDefault();
+  if(!currentGroupId) return;
   const name = document.getElementById('gt-name').value.trim();
   const detail = document.getElementById('gt-detail').value.trim();
   const date = document.getElementById('gt-date').value;
   const time = document.getElementById('gt-time').value;
   const sendUrgent = document.getElementById('gt-urgent').checked;
-  const assignedTo = document.getElementById('gt-assignee').value || null;
   const remindBefore = document.getElementById('gt-remind').value || null;
+  const assignedTo = Array.from(document.querySelectorAll('#gt-assignee-list input:checked')).map(i => i.value);
   if(!name || !date || !time) return;
   const dueAt = new Date(`${date}T${time}:00`).toISOString();
   try{
     await fetch('/api/group-tasks', {
       method:'POST',
       headers:{'Content-Type':'application/json', ...authHeaders()},
-      body: JSON.stringify({ groupId: meInfo.groupId, name, detail, dueAt, priority: gtSelectedPriority, sendUrgent, assignedTo, remindBefore })
+      body: JSON.stringify({ groupId: currentGroupId, name, detail, dueAt, priority: gtSelectedPriority, sendUrgent, assignedTo, remindBefore })
     });
     showToast(sendUrgent ? 'グループタスクを追加し、至急通知を送信しました' : 'グループタスクを追加しました');
-    groupTaskOverlay.classList.remove('show');
-    await loadGroupTasks();
+    document.getElementById('group-task-form').reset();
+    gtSelectedPriority = 3;
+    document.querySelectorAll('#gt-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === 3));
+    document.querySelectorAll('#gt-assignee-list .checkbox-pill').forEach(el => el.classList.remove('checked'));
+    await loadGroupTaskList();
   }catch(err){ showToast('通信エラーが発生しました'); }
 });
 
-/* ---------- Individual task assignment ---------- */
+/* ---------- Review tab ---------- */
+let reviewSelectedPeople = [];
+
+async function loadReviewTab(){
+  const listEl = document.getElementById('review-people-list');
+  listEl.innerHTML = '';
+  try{
+    const res = await fetch('/api/people?type=viewable-people', { headers: authHeaders() });
+    if(!res.ok) return;
+    const data = await res.json();
+    reviewSelectedPeople = [...data.usernames];
+    data.usernames.forEach(name => {
+      const label = document.createElement('label');
+      label.className = 'checkbox-pill checked';
+      label.innerHTML = `<input type="checkbox" value="${escapeHTML(name)}" checked>${escapeHTML(name)}`;
+      const input = label.querySelector('input');
+      input.addEventListener('change', ()=>{
+        label.classList.toggle('checked', input.checked);
+        reviewSelectedPeople = Array.from(document.querySelectorAll('#review-people-list input:checked')).map(i => i.value);
+        loadReviewTasks();
+      });
+      listEl.appendChild(label);
+    });
+  }catch(e){}
+  await loadReviewTasks();
+}
+
+async function loadReviewTasks(){
+  const container = document.getElementById('review-task-list');
+  if(reviewSelectedPeople.length === 0){
+    container.innerHTML = `<div class="empty-state">対象者を選択してください。</div>`;
+    return;
+  }
+  container.innerHTML = `<div class="empty-state">読み込み中…</div>`;
+  try{
+    const results = await Promise.all(reviewSelectedPeople.map(async name => {
+      const res = await fetch(`/api/people?type=member-tasks&username=${encodeURIComponent(name)}`, { headers: authHeaders() });
+      if(!res.ok) return [];
+      const data = await res.json();
+      return data.tasks.map(t => ({ ...t, ownerUsername: name }));
+    }));
+    const merged = results.flat().sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
+    if(merged.length === 0){
+      container.innerHTML = `<div class="empty-state">タスクはありません。</div>`;
+      return;
+    }
+    container.innerHTML = merged.map(reviewTaskCardHTML).join('');
+  }catch(e){ container.innerHTML = `<div class="empty-state">通信エラーが発生しました。</div>`; }
+}
+
+function reviewTaskCardHTML(t){
+  const color = priorityColor(t.priority);
+  const isOverdue = new Date(t.dueAt) < new Date();
+  return `
+  <div class="task-card ${t.completed?'done':''}" data-id="${t.id}" data-owner="${escapeHTML(t.ownerUsername)}">
+    <div class="p-bar" style="background:${color}"></div>
+    <div class="task-body" style="padding-bottom:12px;">
+      <div class="task-top">
+        <div class="task-name ${t.completed?'done':''}">${escapeHTML(t.name)}</div>
+        <div class="prio-pill" style="background:${color}">P${t.priority} ${priorityLabel(t.priority)}</div>
+      </div>
+      <div class="task-meta"><span class="owner-tag">${escapeHTML(t.ownerUsername)}</span><div class="due-pill ${isOverdue?'overdue':''}">🕒 ${fmtDue(t.dueAt)}</div>${t.remindBefore ? `<span class="remind-badge">⏰ ${remindLabelJs(t.remindBefore)}</span>` : ''}</div>
+      ${t.detail ? `<div class="task-detail">${escapeHTML(t.detail)}</div>` : ''}
+      ${!t.completed ? `<button class="nudge-btn" data-nudge="1">📣 催促する</button>` : ''}
+    </div>
+  </div>`;
+}
+
+document.getElementById('review-task-list').addEventListener('click', async e=>{
+  const btn = e.target.closest('button[data-nudge]'); if(!btn) return;
+  const card = e.target.closest('.task-card');
+  const id = card.dataset.id;
+  const owner = card.dataset.owner;
+  if(!confirm(`${owner}さんに催促の通知を送りますか？`)) return;
+  try{
+    const res = await fetch('/api/people', {
+      method:'POST',
+      headers:{'Content-Type':'application/json', ...authHeaders()},
+      body: JSON.stringify({ action:'nudge', targetUsername: owner, taskId: id })
+    });
+    const data = await res.json();
+    if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
+    showToast('催促を送信しました');
+  }catch(err){ showToast('通信エラーが発生しました'); }
+});
+
+/* ---------- Individual task assignment modal ---------- */
 const assignTaskOverlay = document.getElementById('assign-task-overlay');
 const assignTaskForm = document.getElementById('assign-task-form');
 let atSelectedPriority = 3;
@@ -1043,147 +1083,7 @@ assignTaskForm.addEventListener('submit', async e=>{
     if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
     showToast(`${targetUsername}さんにタスクを割り当てました`);
     assignTaskOverlay.classList.remove('show');
-  }catch(err){ showToast('通信エラーが発生しました'); }
-});
-
-/* ---------- Drawer menu ---------- */
-const drawerOverlay = document.getElementById('drawer-overlay');
-document.getElementById('menu-btn').addEventListener('click', ()=>{
-  drawerOverlay.classList.add('show');
-  updateSettingsNotifUI();
-});
-document.getElementById('drawer-close-btn').addEventListener('click', ()=> drawerOverlay.classList.remove('show'));
-drawerOverlay.addEventListener('click', e=>{ if(e.target === drawerOverlay) drawerOverlay.classList.remove('show'); });
-document.getElementById('drawer-logout-btn').addEventListener('click', logout);
-
-document.querySelectorAll('.drawer-tab').forEach(tabBtn => {
-  tabBtn.addEventListener('click', ()=>{
-    if(tabBtn.style.display === 'none') return;
-    document.querySelectorAll('.drawer-tab').forEach(b => b.classList.toggle('active', b === tabBtn));
-    const tab = tabBtn.dataset.tab;
-    document.getElementById('pane-settings').classList.toggle('active', tab === 'settings');
-    document.getElementById('pane-viewer').classList.toggle('active', tab === 'viewer');
-    document.getElementById('pane-mgtc').classList.toggle('active', tab === 'mgtc');
-    if(tab === 'viewer') loadViewerPeople();
-    if(tab === 'mgtc') loadMgtcGroups();
-  });
-});
-
-function updateSettingsNotifUI(){
-  const btn = document.getElementById('settings-notif-btn');
-  const statusEl = document.getElementById('settings-notif-status');
-  if(notifBtn.classList.contains('active')){
-    statusEl.textContent = '有効';
-    btn.textContent = '有効です';
-  } else {
-    statusEl.textContent = '未設定';
-    btn.textContent = '有効にする';
-  }
-}
-document.getElementById('settings-notif-btn').addEventListener('click', async ()=>{
-  if(notifBtn.classList.contains('active')){ showToast('通知は有効です'); return; }
-  try{ await subscribePush(); updateSettingsNotifUI(); }
-  catch(err){ showToast('通知の設定に失敗しました：' + err.message); }
-});
-
-/* ---------- 個人タスク（閲覧） ---------- */
-async function loadViewerPeople(){
-  const sel = document.getElementById('viewer-person-select');
-  sel.innerHTML = '<option value="">選択してください</option>';
-  try{
-    const res = await fetch('/api/people?type=viewable-people', { headers: authHeaders() });
-    if(!res.ok) return;
-    const data = await res.json();
-    data.usernames.forEach(name => {
-      const opt = document.createElement('option');
-      opt.value = name; opt.textContent = name;
-      sel.appendChild(opt);
-    });
-  }catch(e){}
-  document.getElementById('viewer-task-list').innerHTML = '';
-}
-document.getElementById('viewer-person-select').addEventListener('change', async e=>{
-  const targetUsername = e.target.value;
-  const listEl = document.getElementById('viewer-task-list');
-  if(!targetUsername){ listEl.innerHTML = ''; return; }
-  listEl.innerHTML = '<div class="empty-state">読み込み中…</div>';
-  try{
-    const res = await fetch(`/api/people?type=member-tasks&username=${encodeURIComponent(targetUsername)}`, { headers: authHeaders() });
-    if(!res.ok){ listEl.innerHTML = '<div class="empty-state">取得に失敗しました。</div>'; return; }
-    const data = await res.json();
-    if(data.tasks.length === 0){ listEl.innerHTML = '<div class="empty-state">タスクはありません。</div>'; return; }
-    const sorted = [...data.tasks].sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
-    listEl.innerHTML = sorted.map(t => taskCardHTML(t, new Date(t.dueAt) < new Date())).join('');
-    listEl.querySelectorAll('.task-actions').forEach(el => el.remove());
-  }catch(e){ listEl.innerHTML = '<div class="empty-state">通信エラーが発生しました。</div>'; }
-});
-
-/* ---------- グループタスク作成（管理者・責任者） ---------- */
-let mgtcSelectedPriority = 3;
-async function loadMgtcGroups(){
-  const sel = document.getElementById('mgtc-group-select');
-  sel.innerHTML = '<option value="">選択してください</option>';
-  try{
-    const res = await fetch('/api/people?type=managed-groups', { headers: authHeaders() });
-    if(!res.ok) return;
-    const data = await res.json();
-    Object.entries(data.groups).forEach(([groupId, g]) => {
-      const opt = document.createElement('option');
-      opt.value = groupId; opt.textContent = g.name;
-      sel.appendChild(opt);
-    });
-    if(Object.keys(data.groups).length === 1){
-      sel.value = Object.keys(data.groups)[0];
-      sel.dispatchEvent(new Event('change'));
-    }
-  }catch(e){}
-}
-document.getElementById('mgtc-group-select').addEventListener('change', async e=>{
-  const groupId = e.target.value;
-  const assigneeSel = document.getElementById('mgtc-assignee');
-  assigneeSel.innerHTML = '<option value="">（グループ全員）</option>';
-  if(!groupId) return;
-  try{
-    const res = await fetch(`/api/people?type=group-members&groupId=${encodeURIComponent(groupId)}`, { headers: authHeaders() });
-    if(!res.ok) return;
-    const data = await res.json();
-    data.members.forEach(name => {
-      const opt = document.createElement('option');
-      opt.value = name; opt.textContent = name;
-      assigneeSel.appendChild(opt);
-    });
-  }catch(e){}
-});
-document.getElementById('mgtc-prio-select').addEventListener('click', e=>{
-  const opt = e.target.closest('.prio-opt'); if(!opt) return;
-  mgtcSelectedPriority = Number(opt.dataset.p);
-  document.querySelectorAll('#mgtc-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', el === opt));
-});
-document.getElementById('mgtc-form').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const groupId = document.getElementById('mgtc-group-select').value;
-  const name = document.getElementById('mgtc-name').value.trim();
-  const detail = document.getElementById('mgtc-detail').value.trim();
-  const date = document.getElementById('mgtc-date').value;
-  const time = document.getElementById('mgtc-time').value;
-  const assignedTo = document.getElementById('mgtc-assignee').value || null;
-  const remindBefore = document.getElementById('mgtc-remind').value || null;
-  const sendUrgent = document.getElementById('mgtc-urgent').checked;
-  if(!groupId || !name || !date || !time) return;
-  const dueAt = new Date(`${date}T${time}:00`).toISOString();
-  try{
-    const res = await fetch('/api/group-tasks', {
-      method:'POST',
-      headers:{'Content-Type':'application/json', ...authHeaders()},
-      body: JSON.stringify({ groupId, name, detail, dueAt, priority: mgtcSelectedPriority, assignedTo, remindBefore, sendUrgent })
-    });
-    const data = await res.json();
-    if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
-    showToast('グループタスクを作成しました');
-    document.getElementById('mgtc-form').reset();
-    mgtcSelectedPriority = 3;
-    document.querySelectorAll('#mgtc-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === 3));
-    if(meInfo.groupId === groupId) await loadGroupTasks();
+    if(reviewSelectedPeople.includes(targetUsername)) await loadReviewTasks();
   }catch(err){ showToast('通信エラーが発生しました'); }
 });
 
@@ -1193,7 +1093,7 @@ function startApp(){
   initPush();
   fetchMe();
   if(window._tasklineInterval) clearInterval(window._tasklineInterval);
-  window._tasklineInterval = setInterval(()=>{ refreshTasks(); if(meInfo && meInfo.groupId) loadGroupTasks(); }, 30000);
+  window._tasklineInterval = setInterval(()=>{ refreshTasks(); }, 30000);
 }
 
 if(authToken && authUsername){
