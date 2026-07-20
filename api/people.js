@@ -112,7 +112,7 @@ module.exports = async (req, res) => {
       const body = req.body || {};
 
       if (body.action === 'nudge') {
-        const { targetUsername, taskId } = body;
+        const { targetUsername, taskId, message } = body;
         if (!targetUsername || !taskId) { res.status(400).json({ error: 'targetUsername, taskId は必須です' }); return; }
         const target = users[targetUsername];
         if (!target) { res.status(404).json({ error: 'ユーザーが見つかりません' }); return; }
@@ -133,10 +133,14 @@ module.exports = async (req, res) => {
         const task = tasks.find(t => t.id === taskId);
         if (!task) { res.status(404).json({ error: 'タスクが見つかりません' }); return; }
 
+        const bodyText = (message && String(message).trim())
+          ? String(message).trim()
+          : `${username}さんから催促が届いています。${task.detail || '対応をお願いします'}`;
+
         const payload = JSON.stringify({
           taskId: task.id,
           title: `📣 催促：${task.name}`,
-          body: `${username}さんから催促が届いています。${task.detail || '対応をお願いします'}`,
+          body: bodyText,
           priority: 5
         });
         const subs = await getSubscriptions(targetUsername);
