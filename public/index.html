@@ -125,7 +125,10 @@
   .nudge-btn{width:100%;margin-top:8px;background:none;border:1px solid var(--line-strong);color:var(--ink-soft);padding:7px 10px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:5px;}
   .nudge-btn:hover{background:var(--danger-bg);border-color:var(--danger-line);color:var(--danger-ink);}
   .owner-tag{font-family:var(--font-mono);font-size:10.5px;background:var(--accent-bg);color:var(--accent-strong);padding:1px 8px;border-radius:20px;}
-  #review-people-select{min-height:140px;}
+  .review-select-list{max-height:220px;overflow-y:auto;border:1px solid var(--line-strong);border-radius:10px;padding:6px;background:var(--surface-alt);}
+  .review-select-row{display:flex;align-items:center;gap:8px;padding:7px 8px;font-size:13.5px;cursor:pointer;border-radius:6px;}
+  .review-select-row:hover{background:var(--surface);}
+  .review-select-row input{width:auto;margin:0;}
 </style>
 </head>
 <body>
@@ -203,8 +206,8 @@
 
   <div class="tab-panel" id="tab-review">
     <div class="field">
-      <label for="review-people-select">表示する対象者（複数選択可）</label>
-      <select id="review-people-select" multiple size="6"></select>
+      <label>表示する対象者（複数選択可）</label>
+      <div class="review-select-list" id="review-people-list"></div>
     </div>
     <button class="btn-primary" id="open-assign-task-btn" style="margin-bottom:20px;">＋ 個別タスクを割り当てる</button>
     <div id="review-task-list"></div>
@@ -960,23 +963,25 @@ document.getElementById('group-task-form').addEventListener('submit', async e=>{
 let reviewSelectedPeople = [];
 
 async function loadReviewTab(){
-  const sel = document.getElementById('review-people-select');
-  sel.innerHTML = '';
+  const listEl = document.getElementById('review-people-list');
+  listEl.innerHTML = '';
   reviewSelectedPeople = [];
   try{
     const res = await fetch('/api/people?type=viewable-people', { headers: authHeaders() });
     if(!res.ok) return;
     const data = await res.json();
     data.usernames.forEach(name => {
-      const opt = document.createElement('option');
-      opt.value = name; opt.textContent = name;
-      sel.appendChild(opt);
+      const label = document.createElement('label');
+      label.className = 'review-select-row';
+      label.innerHTML = `<input type="checkbox" value="${escapeHTML(name)}">${escapeHTML(name)}`;
+      const input = label.querySelector('input');
+      input.addEventListener('change', ()=>{
+        reviewSelectedPeople = Array.from(document.querySelectorAll('#review-people-list input:checked')).map(i => i.value);
+        loadReviewTasks();
+      });
+      listEl.appendChild(label);
     });
   }catch(e){}
-  sel.onchange = ()=>{
-    reviewSelectedPeople = Array.from(sel.selectedOptions).map(o => o.value);
-    loadReviewTasks();
-  };
   await loadReviewTasks();
 }
 
