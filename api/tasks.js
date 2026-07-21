@@ -36,7 +36,8 @@ module.exports = async (req, res) => {
         alerted: false,
         snoozeUntil: null,
         remindBefore: body.remindBefore ? Number(body.remindBefore) : null,
-        remindAlerted: false
+        remindAlerted: false,
+        recurrence: body.recurrence || null
       };
       tasks.push(task);
       await setTasks(username, tasks);
@@ -65,6 +66,9 @@ module.exports = async (req, res) => {
       if (body.remindBefore !== undefined) {
         task.remindBefore = body.remindBefore ? Number(body.remindBefore) : null;
         task.remindAlerted = false;
+      }
+      if (body.recurrence !== undefined) {
+        task.recurrence = body.recurrence || null;
       }
       if (body.resetAlert) {
         task.alerted = false;
