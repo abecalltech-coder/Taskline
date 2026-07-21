@@ -483,6 +483,13 @@ function remindLabelJs(minutes){
   return `${minutes}分前`;
 }
 
+function sortWithCompletedLast(list){
+  return [...list].sort((a,b)=>{
+    if(a.completed !== b.completed) return a.completed ? 1 : -1;
+    return new Date(a.dueAt) - new Date(b.dueAt);
+  });
+}
+
 const WEEKDAY_LABELS = ['日','月','火','水','木','金','土'];
 function recurrenceLabelJs(r){
   if(!r || !r.freq) return '';
@@ -1057,7 +1064,7 @@ function renderGroupTaskList(){
     container.innerHTML = `<div class="empty-state">グループタスクはまだありません。</div>`;
     return;
   }
-  const sorted = [...currentGroupTasks].sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
+  const sorted = sortWithCompletedLast(currentGroupTasks);
   container.innerHTML = sorted.map(groupTaskCardHTML).join('');
 }
 
@@ -1180,7 +1187,7 @@ async function loadReviewTasks(){
       const data = await res.json();
       return data.tasks.map(t => ({ ...t, ownerUsername: name }));
     }));
-    const merged = results.flat().sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
+    const merged = sortWithCompletedLast(results.flat());
     if(merged.length === 0){
       container.innerHTML = `<div class="empty-state">タスクはありません。</div>`;
       return;
