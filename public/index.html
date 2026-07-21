@@ -129,6 +129,7 @@
   .review-select-row{display:flex;align-items:center;gap:8px;padding:7px 8px;font-size:13.5px;cursor:pointer;border-radius:6px;}
   .review-select-row:hover{background:var(--surface);}
   .review-select-row input{width:auto;margin:0;}
+  .nudge-btn{background:none;border:1px solid var(--line-strong);color:var(--ink-soft);}
 </style>
 </head>
 <body>
@@ -271,6 +272,53 @@
           <option value="1440">1日前</option>
         </select>
       </div>
+      <div class="field">
+        <label for="f-repeat-freq">繰り返し</label>
+        <select id="f-repeat-freq">
+          <option value="">なし</option>
+          <option value="daily">毎日</option>
+          <option value="weekly">毎週</option>
+          <option value="monthly-date">毎月（日付指定）</option>
+          <option value="monthly-weekday">毎月（第◯曜日）</option>
+        </select>
+      </div>
+      <div class="field" id="f-repeat-weekly-field" style="display:none;">
+        <label>曜日（複数選択可）</label>
+        <div class="checkbox-list" id="f-repeat-weekly-days">
+          <label class="checkbox-pill"><input type="checkbox" value="0">日</label>
+          <label class="checkbox-pill"><input type="checkbox" value="1">月</label>
+          <label class="checkbox-pill"><input type="checkbox" value="2">火</label>
+          <label class="checkbox-pill"><input type="checkbox" value="3">水</label>
+          <label class="checkbox-pill"><input type="checkbox" value="4">木</label>
+          <label class="checkbox-pill"><input type="checkbox" value="5">金</label>
+          <label class="checkbox-pill"><input type="checkbox" value="6">土</label>
+        </div>
+      </div>
+      <div class="field" id="f-repeat-monthly-date-field" style="display:none;">
+        <label for="f-repeat-day-of-month">日付</label>
+        <input type="number" id="f-repeat-day-of-month" min="1" max="31" value="1">
+      </div>
+      <div class="field" id="f-repeat-monthly-weekday-field" style="display:none;">
+        <label>第何週・曜日</label>
+        <div class="row-2">
+          <select id="f-repeat-week-of-month">
+            <option value="1">第1</option>
+            <option value="2">第2</option>
+            <option value="3">第3</option>
+            <option value="4">第4</option>
+            <option value="-1">最終</option>
+          </select>
+          <select id="f-repeat-weekday">
+            <option value="0">日曜日</option>
+            <option value="1">月曜日</option>
+            <option value="2">火曜日</option>
+            <option value="3">水曜日</option>
+            <option value="4">木曜日</option>
+            <option value="5">金曜日</option>
+            <option value="6">土曜日</option>
+          </select>
+        </div>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn-secondary" id="cancel-btn">キャンセル</button>
         <button type="submit" class="btn-save">保存する</button>
@@ -312,6 +360,53 @@
           <option value="60">1時間前</option>
           <option value="1440">1日前</option>
         </select>
+      </div>
+      <div class="field">
+        <label for="gt-repeat-freq">繰り返し</label>
+        <select id="gt-repeat-freq">
+          <option value="">なし</option>
+          <option value="daily">毎日</option>
+          <option value="weekly">毎週</option>
+          <option value="monthly-date">毎月（日付指定）</option>
+          <option value="monthly-weekday">毎月（第◯曜日）</option>
+        </select>
+      </div>
+      <div class="field" id="gt-repeat-weekly-field" style="display:none;">
+        <label>曜日（複数選択可）</label>
+        <div class="checkbox-list" id="gt-repeat-weekly-days">
+          <label class="checkbox-pill"><input type="checkbox" value="0">日</label>
+          <label class="checkbox-pill"><input type="checkbox" value="1">月</label>
+          <label class="checkbox-pill"><input type="checkbox" value="2">火</label>
+          <label class="checkbox-pill"><input type="checkbox" value="3">水</label>
+          <label class="checkbox-pill"><input type="checkbox" value="4">木</label>
+          <label class="checkbox-pill"><input type="checkbox" value="5">金</label>
+          <label class="checkbox-pill"><input type="checkbox" value="6">土</label>
+        </div>
+      </div>
+      <div class="field" id="gt-repeat-monthly-date-field" style="display:none;">
+        <label for="gt-repeat-day-of-month">日付</label>
+        <input type="number" id="gt-repeat-day-of-month" min="1" max="31" value="1">
+      </div>
+      <div class="field" id="gt-repeat-monthly-weekday-field" style="display:none;">
+        <label>第何週・曜日</label>
+        <div class="row-2">
+          <select id="gt-repeat-week-of-month">
+            <option value="1">第1</option>
+            <option value="2">第2</option>
+            <option value="3">第3</option>
+            <option value="4">第4</option>
+            <option value="-1">最終</option>
+          </select>
+          <select id="gt-repeat-weekday">
+            <option value="0">日曜日</option>
+            <option value="1">月曜日</option>
+            <option value="2">火曜日</option>
+            <option value="3">水曜日</option>
+            <option value="4">木曜日</option>
+            <option value="5">金曜日</option>
+            <option value="6">土曜日</option>
+          </select>
+        </div>
       </div>
       <div class="field" id="gt-urgent-field" style="display:none;">
         <label style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--danger-ink);">
@@ -387,6 +482,88 @@ function remindLabelJs(minutes){
   if(minutes >= 60) return `${Math.round(minutes/60)}時間前`;
   return `${minutes}分前`;
 }
+
+const WEEKDAY_LABELS = ['日','月','火','水','木','金','土'];
+function recurrenceLabelJs(r){
+  if(!r || !r.freq) return '';
+  if(r.freq === 'daily') return '毎日';
+  if(r.freq === 'weekly'){
+    const days = (r.daysOfWeek||[]).map(d => WEEKDAY_LABELS[d]).join('・');
+    return `毎週${days}`;
+  }
+  if(r.freq === 'monthly-date') return `毎月${r.dayOfMonth}日`;
+  if(r.freq === 'monthly-weekday'){
+    const week = r.weekOfMonth === -1 ? '最終' : `第${r.weekOfMonth}`;
+    return `毎月${week}${WEEKDAY_LABELS[r.weekday]}曜`;
+  }
+  return '';
+}
+
+function setupRecurrenceUI(prefix){
+  const freqSel = document.getElementById(`${prefix}-repeat-freq`);
+  const weeklyField = document.getElementById(`${prefix}-repeat-weekly-field`);
+  const monthlyDateField = document.getElementById(`${prefix}-repeat-monthly-date-field`);
+  const monthlyWeekdayField = document.getElementById(`${prefix}-repeat-monthly-weekday-field`);
+  freqSel.addEventListener('change', ()=>{
+    const v = freqSel.value;
+    weeklyField.style.display = v === 'weekly' ? 'block' : 'none';
+    monthlyDateField.style.display = v === 'monthly-date' ? 'block' : 'none';
+    monthlyWeekdayField.style.display = v === 'monthly-weekday' ? 'block' : 'none';
+  });
+}
+function resetRecurrenceUI(prefix){
+  document.getElementById(`${prefix}-repeat-freq`).value = '';
+  document.querySelectorAll(`#${prefix}-repeat-weekly-days input`).forEach(i => { i.checked = false; i.closest('.checkbox-pill').classList.remove('checked'); });
+  document.getElementById(`${prefix}-repeat-day-of-month`).value = 1;
+  document.getElementById(`${prefix}-repeat-week-of-month`).value = '1';
+  document.getElementById(`${prefix}-repeat-weekday`).value = '0';
+  document.getElementById(`${prefix}-repeat-weekly-field`).style.display = 'none';
+  document.getElementById(`${prefix}-repeat-monthly-date-field`).style.display = 'none';
+  document.getElementById(`${prefix}-repeat-monthly-weekday-field`).style.display = 'none';
+}
+function applyRecurrenceUI(prefix, r){
+  resetRecurrenceUI(prefix);
+  if(!r || !r.freq) return;
+  document.getElementById(`${prefix}-repeat-freq`).value = r.freq;
+  if(r.freq === 'weekly'){
+    document.getElementById(`${prefix}-repeat-weekly-field`).style.display = 'block';
+    (r.daysOfWeek||[]).forEach(d => {
+      const input = document.querySelector(`#${prefix}-repeat-weekly-days input[value="${d}"]`);
+      if(input){ input.checked = true; input.closest('.checkbox-pill').classList.add('checked'); }
+    });
+  } else if(r.freq === 'monthly-date'){
+    document.getElementById(`${prefix}-repeat-monthly-date-field`).style.display = 'block';
+    document.getElementById(`${prefix}-repeat-day-of-month`).value = r.dayOfMonth || 1;
+  } else if(r.freq === 'monthly-weekday'){
+    document.getElementById(`${prefix}-repeat-monthly-weekday-field`).style.display = 'block';
+    document.getElementById(`${prefix}-repeat-week-of-month`).value = String(r.weekOfMonth || 1);
+    document.getElementById(`${prefix}-repeat-weekday`).value = String(r.weekday || 0);
+  }
+}
+function readRecurrenceUI(prefix){
+  const freq = document.getElementById(`${prefix}-repeat-freq`).value;
+  if(!freq) return null;
+  if(freq === 'daily') return { freq: 'daily' };
+  if(freq === 'weekly'){
+    const days = Array.from(document.querySelectorAll(`#${prefix}-repeat-weekly-days input:checked`)).map(i => Number(i.value));
+    return { freq: 'weekly', daysOfWeek: days };
+  }
+  if(freq === 'monthly-date'){
+    const day = Number(document.getElementById(`${prefix}-repeat-day-of-month`).value) || 1;
+    return { freq: 'monthly-date', dayOfMonth: Math.min(Math.max(day,1),31) };
+  }
+  if(freq === 'monthly-weekday'){
+    const week = Number(document.getElementById(`${prefix}-repeat-week-of-month`).value);
+    const weekday = Number(document.getElementById(`${prefix}-repeat-weekday`).value);
+    return { freq: 'monthly-weekday', weekOfMonth: week, weekday };
+  }
+  return null;
+}
+document.querySelectorAll('.checkbox-list .checkbox-pill input[type=checkbox]').forEach(input => {
+  input.addEventListener('change', ()=> input.closest('.checkbox-pill').classList.toggle('checked', input.checked));
+});
+setupRecurrenceUI('f');
+setupRecurrenceUI('gt');
 
 function showToast(msg){
   const t = document.getElementById('toast');
@@ -536,7 +713,7 @@ function taskCardHTML(t, isOverdue){
         <div class="task-name ${t.completed?'done':''}">${escapeHTML(t.name)}</div>
         <div class="prio-pill" style="background:${color}">P${t.priority} ${priorityLabel(t.priority)}</div>
       </div>
-      <div class="task-meta"><div class="due-pill ${isOverdue?'overdue':''}">🕒 ${fmtDue(t.dueAt)}</div>${t.remindBefore ? `<span class="remind-badge">⏰ ${remindLabelJs(t.remindBefore)}</span>` : ''}</div>
+      <div class="task-meta"><div class="due-pill ${isOverdue?'overdue':''}">🕒 ${fmtDue(t.dueAt)}</div>${t.remindBefore ? `<span class="remind-badge">⏰ ${remindLabelJs(t.remindBefore)}</span>` : ''}${t.recurrence ? `<span class="remind-badge">🔁 ${recurrenceLabelJs(t.recurrence)}</span>` : ''}</div>
       ${t.detail ? `<div class="task-detail">${escapeHTML(t.detail)}</div>` : ''}
       ${t.assignedBy ? `<div class="created-by">📌 ${escapeHTML(t.assignedBy)}さんから割り当て</div>` : ''}
     </div>
@@ -578,6 +755,7 @@ function openModal(task){
   document.getElementById('f-name').value = task ? task.name : '';
   document.getElementById('f-detail').value = task ? task.detail : '';
   document.getElementById('f-remind').value = task && task.remindBefore ? String(task.remindBefore) : '';
+  applyRecurrenceUI('f', task ? task.recurrence : null);
   const pad = n => String(n).padStart(2,'0');
   if(task){
     const d = new Date(task.dueAt);
@@ -614,14 +792,15 @@ form.addEventListener('submit', async e=>{
   const date = document.getElementById('f-date').value;
   const time = document.getElementById('f-time').value;
   const remindBefore = document.getElementById('f-remind').value || null;
+  const recurrence = readRecurrenceUI('f');
   if(!name || !date || !time) return;
   const dueAt = new Date(`${date}T${time}:00`).toISOString();
   try{
     if(editingId){
-      await apiUpdateTask({ id: editingId, name, detail, dueAt, priority: selectedPriority, remindBefore, resetAlert: true });
+      await apiUpdateTask({ id: editingId, name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence, resetAlert: true });
       showToast('タスクを更新しました');
     } else {
-      await apiCreateTask({ name, detail, dueAt, priority: selectedPriority, remindBefore });
+      await apiCreateTask({ name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence });
       showToast('タスクを追加しました');
     }
     await refreshTasks();
@@ -860,7 +1039,7 @@ function groupTaskCardHTML(t){
         <div class="task-name ${t.completed?'done':''}">${escapeHTML(t.name)}</div>
         <div class="prio-pill" style="background:${color}">P${t.priority} ${priorityLabel(t.priority)}</div>
       </div>
-      <div class="task-meta"><div class="due-pill">🕒 ${fmtDue(t.dueAt)}</div>${t.remindBefore ? `<span class="remind-badge">⏰ ${remindLabelJs(t.remindBefore)}</span>` : ''}</div>
+      <div class="task-meta"><div class="due-pill">🕒 ${fmtDue(t.dueAt)}</div>${t.remindBefore ? `<span class="remind-badge">⏰ ${remindLabelJs(t.remindBefore)}</span>` : ''}${t.recurrence ? `<span class="remind-badge">🔁 ${recurrenceLabelJs(t.recurrence)}</span>` : ''}</div>
       ${t.detail ? `<div class="task-detail">${escapeHTML(t.detail)}</div>` : ''}
       <div class="created-by">作成者：${escapeHTML(t.createdBy || '')} ／ 担当：${escapeHTML(assigneeText)}</div>
     </div>
@@ -925,6 +1104,7 @@ document.getElementById('open-group-task-btn').addEventListener('click', async (
   gtSelectedPriority = 3;
   document.querySelectorAll('#gt-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === 3));
   document.getElementById('gt-urgent-field').style.display = currentGroupCanManage ? 'block' : 'none';
+  resetRecurrenceUI('gt');
   await populateGroupAssigneeOptions();
   const now = new Date(); now.setMinutes(now.getMinutes()+30);
   const pad = n => String(n).padStart(2,'0');
@@ -944,6 +1124,7 @@ document.getElementById('group-task-form').addEventListener('submit', async e=>{
   const time = document.getElementById('gt-time').value;
   const sendUrgent = document.getElementById('gt-urgent').checked;
   const remindBefore = document.getElementById('gt-remind').value || null;
+  const recurrence = readRecurrenceUI('gt');
   const assignedTo = Array.from(document.querySelectorAll('#gt-assignee-list input:checked')).map(i => i.value);
   if(!name || !date || !time) return;
   const dueAt = new Date(`${date}T${time}:00`).toISOString();
@@ -951,7 +1132,7 @@ document.getElementById('group-task-form').addEventListener('submit', async e=>{
     await fetch('/api/group-tasks', {
       method:'POST',
       headers:{'Content-Type':'application/json', ...authHeaders()},
-      body: JSON.stringify({ groupId: currentGroupId, name, detail, dueAt, priority: gtSelectedPriority, sendUrgent, assignedTo, remindBefore })
+      body: JSON.stringify({ groupId: currentGroupId, name, detail, dueAt, priority: gtSelectedPriority, sendUrgent, assignedTo, remindBefore, recurrence })
     });
     showToast(sendUrgent ? 'グループタスクを追加し、至急通知を送信しました' : 'グループタスクを追加しました');
     groupTaskOverlay.classList.remove('show');
