@@ -104,6 +104,7 @@ async function assignIndividualTask(username, body, res) {
     snoozeUntil: null,
     remindBefore: remindBefore ? Number(remindBefore) : null,
     remindAlerted: false,
+    recurrence: body.recurrence || null,
     assignedBy: username
   };
   tasks.push(task);
@@ -159,6 +160,7 @@ module.exports = async (req, res) => {
         snoozeUntil: null,
         remindBefore: body.remindBefore ? Number(body.remindBefore) : null,
         remindAlerted: false,
+        recurrence: body.recurrence || null,
         createdBy: username,
         assignedTo
       };
@@ -195,6 +197,9 @@ module.exports = async (req, res) => {
       if (body.remindBefore !== undefined) {
         task.remindBefore = body.remindBefore ? Number(body.remindBefore) : null;
         task.remindAlerted = false;
+      }
+      if (body.recurrence !== undefined) {
+        task.recurrence = body.recurrence || null;
       }
       if (body.assignedTo !== undefined) {
         const assignedTo = normalizeAssignees(body.assignedTo);
