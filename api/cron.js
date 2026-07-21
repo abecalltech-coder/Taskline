@@ -42,6 +42,71 @@ async function pushToUsernames(usernames, payload, debugErrors) {
   }
 }
 
+function daysInMonth(year, month) {
+  return new Date(year, month + 1, 0).getDate();
+}
+
+function nthWeekdayOfMonth(year, month, weekday, n) {
+  if (n === -1) {
+    const last = new Date(year, month + 1, 0);
+    const diff = (last.getDay() - weekday + 7) % 7;
+    last.setDate(last.getDate() - diff);
+    return last;
+  }
+  const first = new Date(year, month, 1);
+  const diff = (weekday - first.getDay() + 7) % 7;
+  const date = 1 + diff + (n - 1) * 7;
+  return new Date(year, month, date);
+}
+
+function computeNextOccurrence(recurrence, fromDate) {
+  const base = new Date(fromDate);
+  let next;
+  if (recurrence.freq === 'daily') {
+    next = new Date(base);
+    next.setDate(next.getDate() + 1);
+  } else if (recurrence.freq === 'weekly') {
+    const days = (recurrence.daysOfWeek && recurrence.daysOfWeek.length)
+      ? [...recurrence.daysOfWeek].sort((a, b) => a - b)
+      : [base.getDay()];
+    next = null;
+    for (let i = 1; i <= 14; i++) {
+      const cand = new Date(base);
+      cand.setDate(cand.getDate() + i);
+      if (days.includes(cand.getDay())) { next = cand; break; }
+    }
+    if (!next) return null;
+  } else if (recurrence.freq === 'monthly-date') {
+    next = new Date(base);
+    next.setMonth(next.getMonth() + 1);
+    const day = recurrence.dayOfMonth || base.getDate();
+    next.setDate(Math.min(day, daysInMonth(next.getFullYear(), next.getMonth())));
+  } else if (recurrence.freq === 'monthly-weekday') {
+    const target = new Date(base.getFullYear(), base.getMonth() + 1, 1);
+    next = nthWeekdayOfMonth(target.getFullYear(), target.getMonth(), recurrence.weekday, recurrence.weekOfMonth);
+  } else {
+    return null;
+  }
+  next.setHours(base.getHours(), base.getMinutes(), 0, 0);
+  return next;
+}
+
+function advanceRecurrence(task, now) {
+  let nextDue = computeNextOccurrence(task.recurrence, new Date(task.dueAt));
+  let guard = 0;
+  while (nextDue && nextDue <= now && guard < 60) {
+    nextDue = computeNextOccurrence(task.recurrence, nextDue);
+    guard++;
+  }
+  if (!nextDue) return false;
+  task.dueAt = nextDue.toISOString();
+  task.alerted = false;
+  task.remindAlerted = false;
+  task.completed = false;
+  task.snoozeUntil = null;
+  return true;
+}
+
 module.exports = async (req, res) => {
   if (!isAuthorized(req)) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -64,10 +129,12 @@ module.exports = async (req, res) => {
       let changed = false;
 
       for (const task of tasks) {
-        if (task.completed) continue;
-        const due = new Date(task.dueAt);
+        const isRecurring = !!task.recurrence;
+        if (!isRecurring && task.completed) continue;
 
+        const due = new Date(task.dueAt);
         const effective = task.snoozeUntil ? new Date(task.snoozeUntil) : due;
+
         if (effective <= now && !task.alerted) {
           task.alerted = true;
           task.snoozeUntil = null;
@@ -97,6 +164,10 @@ module.exports = async (req, res) => {
             totalNotified++;
           }
         }
+
+        if (isRecurring && due <= now) {
+          if (advanceRecurrence(task, now)) changed = true;
+        }
       }
 
       if (changed) await setTasks(username, tasks);
@@ -114,11 +185,13 @@ module.exports = async (req, res) => {
         .map(([name]) => name);
 
       for (const task of tasks) {
-        if (task.completed) continue;
+        const isRecurring = !!task.recurrence;
+        if (!isRecurring && task.completed) continue;
+
         const due = new Date(task.dueAt);
         const targetUsernames = (task.assignedTo && task.assignedTo.length) ? task.assignedTo : allMemberUsernames;
-
         const effective = task.snoozeUntil ? new Date(task.snoozeUntil) : due;
+
         if (effective <= now && !task.alerted) {
           task.alerted = true;
           task.snoozeUntil = null;
@@ -147,6 +220,10 @@ module.exports = async (req, res) => {
             await pushToUsernames(targetUsernames, payload, debugErrors);
             totalNotified++;
           }
+        }
+
+        if (isRecurring && due <= now) {
+          if (advanceRecurrence(task, now)) changed = true;
         }
       }
 
