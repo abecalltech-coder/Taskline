@@ -411,7 +411,7 @@
       <div class="field" id="gt-urgent-field" style="display:none;">
         <label style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--danger-ink);">
           <input type="checkbox" id="gt-urgent" style="width:auto;">
-          🔥 作成と同時に至急通知を送る
+          🔥 作成と同時にメッセージを送る
         </label>
       </div>
       <div class="modal-actions">
@@ -1051,7 +1051,7 @@ function groupTaskCardHTML(t){
       <div class="created-by">作成者：${escapeHTML(t.createdBy || '')} ／ 担当：${escapeHTML(assigneeText)}</div>
     </div>
     <div class="task-actions">
-      ${currentGroupCanManage ? `<button class="urgent-btn" data-gaction="urgent" title="今すぐ至急通知" style="color:#B23A3A;">🔥</button>` : ''}
+      ${currentGroupCanManage ? `<button class="urgent-btn" data-gaction="urgent" title="催促メッセージを送る" style="color:#B23A3A;">🔥</button>` : ''}
       <button class="complete-btn" data-gaction="complete" title="${t.completed?'未完了に戻す':'完了にする'}">${t.completed?'↺':'✓'}</button>
       <button class="delete-btn" data-gaction="delete" title="削除">🗑</button>
     </div>
@@ -1084,10 +1084,10 @@ document.getElementById('group-task-list').addEventListener('click', async e=>{
       showToast('削除しました');
     }
   } else if(btn.dataset.gaction === 'urgent'){
-    if(confirm(`「${task.name}」について、至急通知を送りますか？`)){
-      await groupTaskPatch({ id, sendUrgent: true });
-      showToast('至急通知を送信しました');
-    }
+    const message = prompt(`「${task.name}」について送るメッセージを入力してください`, '至急対応をお願いします');
+    if(message === null) return;
+    await groupTaskPatch({ id, sendUrgent: true, urgentMessage: message });
+    showToast('催促を送信しました');
   }
 });
 
@@ -1130,6 +1130,11 @@ document.getElementById('group-task-form').addEventListener('submit', async e=>{
   const date = document.getElementById('gt-date').value;
   const time = document.getElementById('gt-time').value;
   const sendUrgent = document.getElementById('gt-urgent').checked;
+  let urgentMessage = null;
+  if(sendUrgent){
+    urgentMessage = prompt('作成と同時に送るメッセージを入力してください', '至急対応をお願いします');
+    if(urgentMessage === null) return;
+  }
   const remindBefore = document.getElementById('gt-remind').value || null;
   const recurrence = readRecurrenceUI('gt');
   const assignedTo = Array.from(document.querySelectorAll('#gt-assignee-list input:checked')).map(i => i.value);
@@ -1139,9 +1144,9 @@ document.getElementById('group-task-form').addEventListener('submit', async e=>{
     await fetch('/api/group-tasks', {
       method:'POST',
       headers:{'Content-Type':'application/json', ...authHeaders()},
-      body: JSON.stringify({ groupId: currentGroupId, name, detail, dueAt, priority: gtSelectedPriority, sendUrgent, assignedTo, remindBefore, recurrence })
+      body: JSON.stringify({ groupId: currentGroupId, name, detail, dueAt, priority: gtSelectedPriority, sendUrgent, assignedTo, remindBefore, recurrence, urgentMessage })
     });
-    showToast(sendUrgent ? 'グループタスクを追加し、至急通知を送信しました' : 'グループタスクを追加しました');
+    showToast(sendUrgent ? 'グループタスクを追加し、メッセージを送信しました' : 'グループタスクを追加しました');
     groupTaskOverlay.classList.remove('show');
     await loadGroupTaskList();
   }catch(err){ showToast('通信エラーが発生しました'); }
