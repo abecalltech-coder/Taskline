@@ -47,16 +47,20 @@ async function validateAssignees(groupId, assignedTo) {
   return assignedTo.every(name => users[name] && users[name].groupId === groupId);
 }
 
-async function sendUrgentPush(groupId, task, fromUsername) {
+async function sendUrgentPush(groupId, task, fromUsername, customMessage) {
   const users = await getUsers();
   const targetUsernames = (task.assignedTo && task.assignedTo.length)
     ? task.assignedTo
     : Object.entries(users).filter(([, u]) => u.groupId === groupId).map(([name]) => name);
 
+  const bodyText = (customMessage && String(customMessage).trim())
+    ? String(customMessage).trim()
+    : `${fromUsername}さんからの至急連絡：${task.detail || '至急対応してください'}`;
+
   const payload = JSON.stringify({
     taskId: task.id,
     title: `🔥【至急】${task.name}`,
-    body: `${fromUsername}さんからの至急連絡：${task.detail || '至急対応してください'}`,
+    body: bodyText,
     priority: 5
   });
 
@@ -170,7 +174,7 @@ module.exports = async (req, res) => {
       if (body.sendUrgent) {
         const canUrgent = await isGroupLeaderOrAdmin(username, body.groupId);
         if (canUrgent) {
-          await sendUrgentPush(body.groupId, task, username);
+          await sendUrgentPush(body.groupId, task, username, body.urgentMessage);
         }
       }
 
@@ -215,7 +219,7 @@ module.exports = async (req, res) => {
       if (body.sendUrgent) {
         const canUrgent = await isGroupLeaderOrAdmin(username, body.groupId);
         if (!canUrgent) { res.status(403).json({ error: '責任者または管理者のみ至急通知を送れます' }); return; }
-        await sendUrgentPush(body.groupId, task, username);
+        await sendUrgentPush(body.groupId, task, username, body.urgentMessage);
       }
 
       res.status(200).json(task);
