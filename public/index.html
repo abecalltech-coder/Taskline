@@ -130,6 +130,24 @@
   .review-select-row:hover{background:var(--surface);}
   .review-select-row input{width:auto;margin:0;}
   .nudge-btn{background:none;border:1px solid var(--line-strong);color:var(--ink-soft);}
+  .view-toggle{display:flex;gap:6px;margin-bottom:16px;}
+  .view-toggle-btn{background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
+  .view-toggle-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .calendar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .cal-nav-btn{background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink);width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer;}
+  .cal-month-label{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--ink);}
+  .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:20px;}
+  .cal-weekday{text-align:center;font-size:11px;color:var(--ink-faint);padding:4px 0;font-weight:500;}
+  .cal-day{aspect-ratio:1;border:1px solid var(--line);border-radius:8px;padding:4px;cursor:pointer;background:var(--surface);display:flex;flex-direction:column;gap:2px;position:relative;min-height:40px;}
+  .cal-day:hover{border-color:var(--accent);}
+  .cal-day.other-month{opacity:.35;}
+  .cal-day.today{border-color:var(--accent);border-width:2px;}
+  .cal-day.selected{background:var(--accent-bg);border-color:var(--accent);}
+  .cal-day-num{font-size:12px;font-weight:500;color:var(--ink);}
+  .cal-day-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:auto;}
+  .cal-dot{width:5px;height:5px;border-radius:50%;flex:none;}
+  .cal-day-count{position:absolute;top:2px;right:3px;font-family:var(--font-mono);font-size:9px;color:var(--ink-faint);}
+  .calendar-day-tasks-header{font-size:13px;font-weight:500;color:var(--ink-soft);margin-bottom:10px;}
 </style>
 </head>
 <body>
@@ -193,7 +211,22 @@
       </div>
       <button class="btn-primary" id="open-add-btn">＋ 新規タスク</button>
     </div>
-    <div id="task-groups"></div>
+    <div class="view-toggle">
+      <button class="view-toggle-btn active" id="personal-view-calendar-btn">📅 カレンダー</button>
+      <button class="view-toggle-btn" id="personal-view-list-btn">📋 リスト</button>
+    </div>
+    <div id="personal-calendar-wrap">
+      <div class="calendar-header">
+        <button class="cal-nav-btn" id="personal-cal-prev">‹</button>
+        <div class="cal-month-label" id="personal-cal-label"></div>
+        <button class="cal-nav-btn" id="personal-cal-next">›</button>
+      </div>
+      <div class="calendar-grid" id="personal-calendar-grid"></div>
+      <div id="personal-calendar-day-tasks"></div>
+    </div>
+    <div id="personal-list-wrap" style="display:none;">
+      <div id="task-groups"></div>
+    </div>
   </div>
 
   <div class="tab-panel" id="tab-group">
@@ -202,7 +235,22 @@
       <div class="group-head" style="margin:0;"><h2>タスク一覧</h2></div>
       <button class="btn-primary" id="open-group-task-btn">＋ 新規タスク</button>
     </div>
-    <div id="group-task-list"></div>
+    <div class="view-toggle">
+      <button class="view-toggle-btn active" id="group-view-calendar-btn">📅 カレンダー</button>
+      <button class="view-toggle-btn" id="group-view-list-btn">📋 リスト</button>
+    </div>
+    <div id="group-calendar-wrap">
+      <div class="calendar-header">
+        <button class="cal-nav-btn" id="group-cal-prev">‹</button>
+        <div class="cal-month-label" id="group-cal-label"></div>
+        <button class="cal-nav-btn" id="group-cal-next">›</button>
+      </div>
+      <div class="calendar-grid" id="group-calendar-grid"></div>
+      <div id="group-calendar-day-tasks"></div>
+    </div>
+    <div id="group-list-wrap" style="display:none;">
+      <div id="group-task-list"></div>
+    </div>
   </div>
 
   <div class="tab-panel" id="tab-review">
@@ -734,12 +782,17 @@ function taskCardHTML(t, isOverdue){
 
 function render(){
   const { overdue, today, upcoming, done } = groupTasks();
-  const container = document.getElementById('task-groups');
   document.getElementById('stat-overdue').textContent = overdue.length;
   document.getElementById('stat-today').textContent = today.length;
   document.getElementById('stat-upcoming').textContent = upcoming.length;
   document.getElementById('stat-done').textContent = done.length;
 
+  renderPersonalList(overdue, today, upcoming, done);
+  renderPersonalCalendar();
+}
+
+function renderPersonalList(overdue, today, upcoming, done){
+  const container = document.getElementById('task-groups');
   if(tasks.length === 0){
     container.innerHTML = `<div class="empty-state">タスクはまだありません。右下の「＋」から新規タスクを追加してください。</div>`;
     return;
@@ -751,6 +804,93 @@ function render(){
   if(done.length){ html += `<section class="group"><div class="group-head"><h2>完了済み</h2><span class="count">${done.length}</span></div>${done.map(t=>taskCardHTML(t,false)).join('')}</section>`; }
   container.innerHTML = html || `<div class="empty-state">タスクはまだありません。右下の「＋」から新規タスクを追加してください。</div>`;
 }
+
+/* ---------- Calendar view (shared helpers) ---------- */
+function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function buildCalendarCells(monthDate){
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const startWeekday = firstDay.getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const prevMonthDays = new Date(year, month, 0).getDate();
+  const cells = [];
+  for(let i=startWeekday-1;i>=0;i--){ cells.push({ date: new Date(year, month-1, prevMonthDays-i), otherMonth:true }); }
+  for(let d=1; d<=daysInMonth; d++){ cells.push({ date: new Date(year, month, d), otherMonth:false }); }
+  while(cells.length < 42){
+    const last = cells[cells.length-1].date;
+    const next = new Date(last); next.setDate(next.getDate()+1);
+    cells.push({ date: next, otherMonth:true });
+  }
+  return cells;
+}
+function calendarGridHTML(monthDate, selectedDate, tasksList){
+  const cells = buildCalendarCells(monthDate);
+  const today = new Date();
+  const weekdayHeaders = ['日','月','火','水','木','金','土'].map(w=>`<div class="cal-weekday">${w}</div>`).join('');
+  const cellsHTML = cells.map(c=>{
+    const dayTasks = tasksList.filter(t => sameDay(new Date(t.dueAt), c.date));
+    const isToday = sameDay(c.date, today);
+    const isSelected = selectedDate && sameDay(c.date, selectedDate);
+    const dots = dayTasks.slice(0,4).map(t=>`<span class="cal-dot" style="background:${priorityColor(t.priority)}"></span>`).join('');
+    return `<div class="cal-day ${c.otherMonth?'other-month':''} ${isToday?'today':''} ${isSelected?'selected':''}" data-date="${c.date.getFullYear()}-${String(c.date.getMonth()+1).padStart(2,'0')}-${String(c.date.getDate()).padStart(2,'0')}">
+      <div class="cal-day-num">${c.date.getDate()}</div>
+      <div class="cal-day-dots">${dots}</div>
+      ${dayTasks.length>4?`<div class="cal-day-count">+${dayTasks.length-4}</div>`:''}
+    </div>`;
+  }).join('');
+  return weekdayHeaders + cellsHTML;
+}
+function parseCalDate(str){
+  const [y,m,d] = str.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+
+let personalCalMonth = new Date();
+let personalSelectedDate = new Date();
+let personalView = 'calendar';
+
+function renderPersonalCalendar(){
+  document.getElementById('personal-cal-label').textContent = `${personalCalMonth.getFullYear()}年${personalCalMonth.getMonth()+1}月`;
+  const grid = document.getElementById('personal-calendar-grid');
+  grid.innerHTML = calendarGridHTML(personalCalMonth, personalSelectedDate, tasks);
+  grid.querySelectorAll('.cal-day').forEach(el => {
+    el.addEventListener('click', ()=>{
+      personalSelectedDate = parseCalDate(el.dataset.date);
+      renderPersonalCalendar();
+    });
+  });
+  const dayTasks = tasks.filter(t => sameDay(new Date(t.dueAt), personalSelectedDate)).sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
+  const container = document.getElementById('personal-calendar-day-tasks');
+  const label = `${personalSelectedDate.getMonth()+1}月${personalSelectedDate.getDate()}日`;
+  if(dayTasks.length === 0){
+    container.innerHTML = `<div class="calendar-day-tasks-header">${label}</div><div class="empty-state">タスクはありません。</div>`;
+  } else {
+    container.innerHTML = `<div class="calendar-day-tasks-header">${label}（${dayTasks.length}件）</div>${dayTasks.map(t=>taskCardHTML(t, new Date(t.dueAt) < new Date() && !t.completed)).join('')}`;
+  }
+}
+document.getElementById('personal-cal-prev').addEventListener('click', ()=>{
+  personalCalMonth = new Date(personalCalMonth.getFullYear(), personalCalMonth.getMonth()-1, 1);
+  renderPersonalCalendar();
+});
+document.getElementById('personal-cal-next').addEventListener('click', ()=>{
+  personalCalMonth = new Date(personalCalMonth.getFullYear(), personalCalMonth.getMonth()+1, 1);
+  renderPersonalCalendar();
+});
+document.getElementById('personal-view-calendar-btn').addEventListener('click', ()=>{
+  personalView = 'calendar';
+  document.getElementById('personal-view-calendar-btn').classList.add('active');
+  document.getElementById('personal-view-list-btn').classList.remove('active');
+  document.getElementById('personal-calendar-wrap').style.display = 'block';
+  document.getElementById('personal-list-wrap').style.display = 'none';
+});
+document.getElementById('personal-view-list-btn').addEventListener('click', ()=>{
+  personalView = 'list';
+  document.getElementById('personal-view-list-btn').classList.add('active');
+  document.getElementById('personal-view-calendar-btn').classList.remove('active');
+  document.getElementById('personal-calendar-wrap').style.display = 'none';
+  document.getElementById('personal-list-wrap').style.display = 'block';
+});
 
 /* ---------- Personal task modal ---------- */
 const overlay = document.getElementById('task-overlay');
@@ -815,7 +955,7 @@ form.addEventListener('submit', async e=>{
   }catch(err){ showToast(err.message); }
 });
 
-document.getElementById('task-groups').addEventListener('click', async e=>{
+async function handlePersonalTaskClick(e){
   const btn = e.target.closest('button[data-action]'); if(!btn) return;
   const card = e.target.closest('.task-card');
   const id = card.dataset.id;
@@ -834,7 +974,9 @@ document.getElementById('task-groups').addEventListener('click', async e=>{
       showToast(!task.completed ? '対応完了にしました' : '未完了に戻しました');
     }catch(err){ showToast(err.message); }
   }
-});
+}
+document.getElementById('task-groups').addEventListener('click', handlePersonalTaskClick);
+document.getElementById('personal-calendar-day-tasks').addEventListener('click', handlePersonalTaskClick);
 
 /* ---------- Push notifications ---------- */
 function urlBase64ToUint8Array(base64String){
@@ -1003,6 +1145,8 @@ async function loadGroupTab(){
     wrap.innerHTML = `<div class="empty-state">所属しているグループがありません。</div>`;
     openBtn.style.display = 'none';
     document.getElementById('group-task-list').innerHTML = '';
+    currentGroupTasks = [];
+    renderGroupCalendar();
   }
 }
 
@@ -1062,13 +1206,60 @@ function renderGroupTaskList(){
   const container = document.getElementById('group-task-list');
   if(currentGroupTasks.length === 0){
     container.innerHTML = `<div class="empty-state">グループタスクはまだありません。</div>`;
-    return;
+  } else {
+    const sorted = sortWithCompletedLast(currentGroupTasks);
+    container.innerHTML = sorted.map(groupTaskCardHTML).join('');
   }
-  const sorted = sortWithCompletedLast(currentGroupTasks);
-  container.innerHTML = sorted.map(groupTaskCardHTML).join('');
+  renderGroupCalendar();
 }
 
-document.getElementById('group-task-list').addEventListener('click', async e=>{
+let groupCalMonth = new Date();
+let groupSelectedDate = new Date();
+let groupView = 'calendar';
+
+function renderGroupCalendar(){
+  document.getElementById('group-cal-label').textContent = `${groupCalMonth.getFullYear()}年${groupCalMonth.getMonth()+1}月`;
+  const grid = document.getElementById('group-calendar-grid');
+  grid.innerHTML = calendarGridHTML(groupCalMonth, groupSelectedDate, currentGroupTasks);
+  grid.querySelectorAll('.cal-day').forEach(el => {
+    el.addEventListener('click', ()=>{
+      groupSelectedDate = parseCalDate(el.dataset.date);
+      renderGroupCalendar();
+    });
+  });
+  const dayTasks = currentGroupTasks.filter(t => sameDay(new Date(t.dueAt), groupSelectedDate)).sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
+  const container = document.getElementById('group-calendar-day-tasks');
+  const label = `${groupSelectedDate.getMonth()+1}月${groupSelectedDate.getDate()}日`;
+  if(dayTasks.length === 0){
+    container.innerHTML = `<div class="calendar-day-tasks-header">${label}</div><div class="empty-state">タスクはありません。</div>`;
+  } else {
+    container.innerHTML = `<div class="calendar-day-tasks-header">${label}（${dayTasks.length}件）</div>${dayTasks.map(groupTaskCardHTML).join('')}`;
+  }
+}
+document.getElementById('group-cal-prev').addEventListener('click', ()=>{
+  groupCalMonth = new Date(groupCalMonth.getFullYear(), groupCalMonth.getMonth()-1, 1);
+  renderGroupCalendar();
+});
+document.getElementById('group-cal-next').addEventListener('click', ()=>{
+  groupCalMonth = new Date(groupCalMonth.getFullYear(), groupCalMonth.getMonth()+1, 1);
+  renderGroupCalendar();
+});
+document.getElementById('group-view-calendar-btn').addEventListener('click', ()=>{
+  groupView = 'calendar';
+  document.getElementById('group-view-calendar-btn').classList.add('active');
+  document.getElementById('group-view-list-btn').classList.remove('active');
+  document.getElementById('group-calendar-wrap').style.display = 'block';
+  document.getElementById('group-list-wrap').style.display = 'none';
+});
+document.getElementById('group-view-list-btn').addEventListener('click', ()=>{
+  groupView = 'list';
+  document.getElementById('group-view-list-btn').classList.add('active');
+  document.getElementById('group-view-calendar-btn').classList.remove('active');
+  document.getElementById('group-calendar-wrap').style.display = 'none';
+  document.getElementById('group-list-wrap').style.display = 'block';
+});
+
+async function handleGroupTaskClick(e){
   const btn = e.target.closest('button[data-gaction]'); if(!btn) return;
   const card = e.target.closest('.task-card');
   const id = card.dataset.id;
@@ -1089,7 +1280,9 @@ document.getElementById('group-task-list').addEventListener('click', async e=>{
     await groupTaskPatch({ id, sendUrgent: true, urgentMessage: message });
     showToast('催促を送信しました');
   }
-});
+}
+document.getElementById('group-task-list').addEventListener('click', handleGroupTaskClick);
+document.getElementById('group-calendar-day-tasks').addEventListener('click', handleGroupTaskClick);
 
 async function groupTaskPatch(payload){
   try{
