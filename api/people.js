@@ -1,6 +1,11 @@
 const webpush = require('web-push');
-const { getUsers, getGroups, getTasks, getSubscriptions } = require('../lib/db');
+const { getUsers, getGroups, getTasks, setTasks, getSubscriptions } = require('../lib/db');
 const { getAuthUser } = require('../lib/auth');
+
+function sameGroupOrAdmin(me, target) {
+  if (me.isAdmin) return true;
+  return !!(me.groupId && target && target.groupId === me.groupId);
+}
 
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT || 'mailto:example@example.com',
@@ -114,17 +119,7 @@ module.exports = async (req, res) => {
         const target = users[targetUsername];
         if (!target) { res.status(404).json({ error: 'ユーザーが見つかりません' }); return; }
 
-        let allowed = false;
-        if (me.isAdmin) {
-          allowed = true;
-        } else if (me.groupId) {
-          const groups = await getGroups();
-          const group = groups[me.groupId];
-          if (group && group.leaderUsername === username && target.groupId === me.groupId) {
-            allowed = true;
-          }
-        }
-        if (!allowed) { res.status(403).json({ error: 'このユーザーを催促する権限がありません' }); return; }
+        if (!sameGroupOrAdmin(me, target)) { res.status(403).json({ error: 'このユーザーを催促する権限がありません' }); return; }
 
         const tasks = await getTasks(targetUsername);
         const task = tasks.find(t => t.id === taskId);
@@ -144,6 +139,37 @@ module.exports = async (req, res) => {
         await Promise.all(subs.map(sub => webpush.sendNotification(sub, payload).catch(() => {})));
 
         res.status(200).json({ ok: true });
+        return;
+      }
+
+      if (body.action === 'edit-task') {
+        const { targetUsername, taskId } = body;
+        if (!targetUsername || !taskId) { res.status(400).json({ error: 'targetUsername, taskId は必須です' }); return; }
+        const target = users[targetUsername];
+        if (!target) { res.status(404).json({ error: 'ユーザーが見つかりません' }); return; }
+
+        if (!sameGroupOrAdmin(me, target)) { res.status(403).json({ error: 'このタスクを変更する権限がありません' }); return; }
+
+        const tasks = await getTasks(targetUsername);
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) { res.status(404).json({ error: 'タスクが見つかりません' }); return; }
+
+        if (body.name !== undefined) task.name = body.name;
+        if (body.detail !== undefined) task.detail = body.detail;
+        if (body.dueAt !== undefined) task.dueAt = body.dueAt;
+        if (body.priority !== undefined) task.priority = Number(body.priority);
+        if (body.remindBefore !== undefined) {
+          task.remindBefore = body.remindBefore ? Number(body.remindBefore) : null;
+          task.remindAlerted = false;
+        }
+        if (body.recurrence !== undefined) {
+          task.recurrence = body.recurrence || null;
+        }
+        task.alerted = false;
+        task.snoozeUntil = null;
+
+        await setTasks(targetUsername, tasks);
+        res.status(200).json({ ok: true, task });
         return;
       }
 

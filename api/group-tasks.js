@@ -84,12 +84,9 @@ async function assignIndividualTask(username, body, res) {
   let allowed = false;
   if (me.isAdmin) {
     allowed = true;
-  } else if (me.groupId) {
-    const groups = await getGroups();
-    const group = groups[me.groupId];
-    if (group && group.leaderUsername === username && target.groupId === me.groupId) {
-      allowed = true;
-    }
+  } else if (me.groupId && target.groupId === me.groupId) {
+    // 同じグループに所属していれば誰でも割り当て可能
+    allowed = true;
   }
   if (!allowed) {
     res.status(403).json({ error: 'このユーザーにタスクを割り当てる権限がありません' });

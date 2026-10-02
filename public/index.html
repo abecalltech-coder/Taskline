@@ -65,6 +65,7 @@
   .group-head h2{font-family:var(--font-display);font-size:14.5px;font-weight:700;margin:0;color:var(--ink);}
   .group-head .count{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);background:var(--surface-alt);border:1px solid var(--line);padding:1px 8px;border-radius:20px;}
   .group-head.overdue h2{color:var(--danger-ink);}
+  .group-head.today h2{color:var(--accent-strong);}
   .task-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:8px;display:flex;overflow:hidden;box-shadow:var(--shadow);}
   .task-card.done{opacity:.5;}
   .p-bar{width:6px;flex:none;}
@@ -220,7 +221,6 @@
       <div class="toolbar-buttons">
         <button class="btn-primary" id="open-add-btn">＋ 個人タスク</button>
         <button class="btn-outline" id="open-group-task-btn" style="display:none;">＋ グループタスク</button>
-        <button class="btn-outline" id="open-assign-task-btn" style="display:none;">＋ 個別タスクを割り当てる</button>
       </div>
     </div>
 
@@ -256,6 +256,10 @@
   <div class="modal">
     <h3 id="modal-title">新規タスク</h3>
     <form id="task-form">
+      <div class="field" id="f-assignee-field" style="display:none;">
+        <label for="f-assignee">担当者</label>
+        <select id="f-assignee"></select>
+      </div>
       <div class="field"><label for="f-name">タスク名</label><input type="text" id="f-name" placeholder="例：見積書を送付する" required></div>
       <div class="field"><label for="f-detail">詳細</label><textarea id="f-detail" placeholder="タスクの詳細を入力"></textarea></div>
       <div class="row-2">
@@ -432,47 +436,6 @@
   </div>
 </div>
 
-<div class="overlay" id="assign-task-overlay">
-  <div class="modal">
-    <h3>個別タスクを割り当てる</h3>
-    <form id="assign-task-form">
-      <div class="field">
-        <label for="at-target">対象者</label>
-        <select id="at-target" required><option value="">選択してください</option></select>
-      </div>
-      <div class="field"><label for="at-name">タスク名</label><input type="text" id="at-name" placeholder="例：見積書の確認" required></div>
-      <div class="field"><label for="at-detail">詳細</label><textarea id="at-detail" placeholder="タスクの詳細を入力"></textarea></div>
-      <div class="row-2">
-        <div class="field"><label for="at-date">期日</label><input type="date" id="at-date" required></div>
-        <div class="field"><label for="at-time">時間</label><input type="time" id="at-time" required></div>
-      </div>
-      <div class="field">
-        <label>優先順位</label>
-        <div class="prio-select" id="at-prio-select">
-          <div class="prio-opt" data-p="1" style="background:#3B82D6">1</div>
-          <div class="prio-opt" data-p="2" style="background:#1FA089">2</div>
-          <div class="prio-opt selected" data-p="3" style="background:#E0A426">3</div>
-          <div class="prio-opt" data-p="4" style="background:#DB7A2A">4</div>
-          <div class="prio-opt" data-p="5" style="background:#D1483F">5</div>
-        </div>
-      </div>
-      <div class="field">
-        <label for="at-remind">事前通知</label>
-        <select id="at-remind">
-          <option value="">なし</option>
-          <option value="5">5分前</option>
-          <option value="30">30分前</option>
-          <option value="60">1時間前</option>
-          <option value="1440">1日前</option>
-        </select>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn-secondary" id="at-cancel-btn">キャンセル</button>
-        <button type="submit" class="btn-save">割り当てる</button>
-      </div>
-    </form>
-  </div>
-</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -709,6 +672,7 @@ function taskCardHTML(t){
     if(t._canManage) actions.push(`<button class="urgent-btn" data-action="gurgent">至急連絡</button>`);
     actions.push(`<button class="delete-btn" data-action="gdelete">削除</button>`);
   } else if(t._source === 'readonly'){
+    if(t._canEdit) actions.push(`<button data-action="edit-other">変更</button>`);
     if(t._canNudge) actions.push(`<button class="urgent-btn" data-action="nudge">催促する</button>`);
   }
   const ownerTag = t._owner ? `<span class="owner-tag">${escapeHTML(t._owner)}</span>` : '';
@@ -752,29 +716,49 @@ function renderStats(list){
   return { overdue, today, upcoming, done };
 }
 
-function renderGroupedTaskList(list){
-  const container = document.getElementById('task-display');
-  const { overdue, today, upcoming, done } = renderStats(list);
-  if(list.length === 0){
-    container.innerHTML = `<div class="empty-state">タスクはまだありません。右下の「＋」から新規タスクを追加してください。</div>`;
-    return;
-  }
-  let html = '';
-  if(overdue.length){ html += `<section class="group"><div class="group-head overdue"><h2>期限切れ</h2><span class="count">${overdue.length}</span></div>${overdue.map(taskCardHTML).join('')}</section>`; }
-  if(today.length){ html += `<section class="group"><div class="group-head"><h2>本日期限</h2><span class="count">${today.length}</span></div>${today.map(taskCardHTML).join('')}</section>`; }
-  if(upcoming.length){ html += `<section class="group"><div class="group-head"><h2>今後の予定</h2><span class="count">${upcoming.length}</span></div>${upcoming.map(taskCardHTML).join('')}</section>`; }
-  if(done.length){ html += `<section class="group"><div class="group-head"><h2>完了済み</h2><span class="count">${done.length}</span></div>${done.map(taskCardHTML).join('')}</section>`; }
-  container.innerHTML = html || `<div class="empty-state">タスクはまだありません。</div>`;
+function sameCalendarDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function fmtDateLabel(d){ return `${d.getMonth()+1}月${d.getDate()}日(${WEEKDAY_LABELS[d.getDay()]})`; }
+
+function buildDaySections(list){
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const active = list.filter(t => !t.completed);
+  const doneSorted = list.filter(t => t.completed).sort((a,b)=> new Date(b.dueAt)-new Date(a.dueAt));
+
+  const overdue = active.filter(t => new Date(t.dueAt) < now).sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
+  const future = active.filter(t => new Date(t.dueAt) >= now);
+
+  const buckets = new Map();
+  future.forEach(t => {
+    const d = new Date(t.dueAt);
+    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    if(!buckets.has(key)) buckets.set(key, { date: new Date(d.getFullYear(), d.getMonth(), d.getDate()), tasks: [] });
+    buckets.get(key).tasks.push(t);
+  });
+  const sortedBuckets = Array.from(buckets.values()).sort((a,b)=> a.date - b.date);
+  sortedBuckets.forEach(b => b.tasks.sort((a,c)=> new Date(a.dueAt)-new Date(c.dueAt)));
+
+  const sections = [];
+  if(overdue.length) sections.push({ label: '期限切れ', cls: 'overdue', tasks: overdue });
+  sortedBuckets.forEach(b => {
+    const isToday = sameCalendarDay(b.date, todayStart);
+    sections.push({ label: isToday ? `本日（${fmtDateLabel(b.date)}）` : fmtDateLabel(b.date), cls: isToday ? 'today' : '', tasks: b.tasks });
+  });
+  if(doneSorted.length) sections.push({ label: '完了済み', cls: '', tasks: doneSorted });
+  return sections;
 }
 
-function renderFlatTaskList(list){
+function renderTaskList(list, emptyMsg){
   const container = document.getElementById('task-display');
   renderStats(list);
-  if(list.length === 0){
-    container.innerHTML = `<div class="empty-state">タスクはありません。</div>`;
+  const sections = list.length ? buildDaySections(list) : [];
+  if(sections.length === 0){
+    container.innerHTML = `<div class="empty-state">${emptyMsg}</div>`;
     return;
   }
-  container.innerHTML = sortWithCompletedLast(list).map(taskCardHTML).join('');
+  container.innerHTML = sections.map(sec =>
+    `<section class="group"><div class="group-head ${sec.cls}"><h2>${sec.label}</h2><span class="count">${sec.tasks.length}</span></div>${sec.tasks.map(taskCardHTML).join('')}</section>`
+  ).join('');
 }
 
 /* ---------- Unified task tab state ---------- */
@@ -785,6 +769,7 @@ let groupMembers = [];
 let viewMode = 'self'; // 'self' | 'all' | <username>
 let personalTasks = [];
 let groupTasksAll = [];
+let currentDisplayList = [];
 
 async function refreshTasks(){
   try{
@@ -799,7 +784,6 @@ async function initTasksTab(){
   if(!meInfo) return;
   const wrap = document.getElementById('group-selector-wrap');
   const groupTaskBtn = document.getElementById('open-group-task-btn');
-  const assignBtn = document.getElementById('open-assign-task-btn');
 
   if(meInfo.isAdmin){
     wrap.innerHTML = `<div class="group-selector-row"><label style="font-size:12.5px;color:var(--ink-soft);">グループ：</label><select id="group-selector"><option value="">（グループなし／自分のみ）</option></select></div>`;
@@ -834,7 +818,6 @@ async function initTasksTab(){
   }
 
   groupTaskBtn.style.display = currentGroupId ? 'inline-block' : 'none';
-  assignBtn.style.display = currentGroupCanManage ? 'inline-block' : 'none';
 
   await setupGroupMembers();
   await loadTaskDisplay();
@@ -908,7 +891,8 @@ async function loadSelfView(){
       }
     }catch(e){}
   }
-  renderGroupedTaskList([...personalTasks, ...groupTasksAll]);
+  currentDisplayList = [...personalTasks, ...groupTasksAll];
+  renderTaskList(currentDisplayList, 'タスクはまだありません。右下の「＋」から新規タスクを追加してください。');
 }
 
 async function loadMergedView(usernames){
@@ -919,9 +903,10 @@ async function loadMergedView(usernames){
       const res = await fetch(`/api/people?type=member-tasks&username=${encodeURIComponent(name)}`, { headers: authHeaders() });
       if(!res.ok) return [];
       const data = await res.json();
-      return data.tasks.map(t => ({ ...t, _source: 'readonly', _owner: name, _canNudge: currentGroupCanManage && name !== authUsername }));
+      return data.tasks.map(t => ({ ...t, _source: 'readonly', _owner: name, _canEdit: name !== authUsername, _canNudge: name !== authUsername }));
     }));
-    renderFlatTaskList(results.flat());
+    currentDisplayList = results.flat();
+    renderTaskList(currentDisplayList, 'タスクはありません。');
   }catch(e){
     container.innerHTML = `<div class="empty-state">通信エラーが発生しました。</div>`;
   }
@@ -932,9 +917,9 @@ document.getElementById('task-display').addEventListener('click', async e=>{
   const card = e.target.closest('.task-card');
   const id = card.dataset.id;
   const action = btn.dataset.action;
+  const task = currentDisplayList.find(t => t.id === id); if(!task) return;
 
-  if(action === 'complete' || action === 'edit' || action === 'delete'){
-    const task = personalTasks.find(t => t.id === id); if(!task) return;
+  if(task._source === 'personal'){
     if(action === 'edit'){ openModal(task); }
     else if(action === 'delete'){
       if(confirm(`「${task.name}」を削除しますか？`)){
@@ -951,8 +936,7 @@ document.getElementById('task-display').addEventListener('click', async e=>{
     return;
   }
 
-  if(action === 'gcomplete' || action === 'gdelete' || action === 'gurgent'){
-    const task = groupTasksAll.find(t => t.id === id); if(!task) return;
+  if(task._source === 'group'){
     if(action === 'gcomplete'){
       await groupTaskPatch({ id, completed: !task.completed });
       showToast(!task.completed ? '対応完了にしました' : '未完了に戻しました');
@@ -971,20 +955,25 @@ document.getElementById('task-display').addEventListener('click', async e=>{
     return;
   }
 
-  if(action === 'nudge'){
+  if(task._source === 'readonly'){
     const owner = card.dataset.owner;
-    const message = prompt(`${owner}さんに送る催促メッセージを入力してください`, '対応をお願いします');
-    if(message === null) return;
-    try{
-      const res = await fetch('/api/people', {
-        method:'POST',
-        headers:{'Content-Type':'application/json', ...authHeaders()},
-        body: JSON.stringify({ action:'nudge', targetUsername: owner, taskId: id, message })
-      });
-      const data = await res.json();
-      if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
-      showToast('催促を送信しました');
-    }catch(err){ showToast('通信エラーが発生しました'); }
+    if(action === 'edit-other'){
+      openModal(task, owner);
+    } else if(action === 'nudge'){
+      const message = prompt(`${owner}さんに送る催促メッセージを入力してください`, '対応をお願いします');
+      if(message === null) return;
+      try{
+        const res = await fetch('/api/people', {
+          method:'POST',
+          headers:{'Content-Type':'application/json', ...authHeaders()},
+          body: JSON.stringify({ action:'nudge', targetUsername: owner, taskId: id, message })
+        });
+        const data = await res.json();
+        if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
+        showToast('催促を送信しました');
+      }catch(err){ showToast('通信エラーが発生しました'); }
+    }
+    return;
   }
 });
 
@@ -999,9 +988,21 @@ async function groupTaskPatch(payload){
 const overlay = document.getElementById('task-overlay');
 const form = document.getElementById('task-form');
 
-function openModal(task){
+let editingOwner = null;
+
+function openModal(task, owner){
   editingId = task ? task.id : null;
-  document.getElementById('modal-title').textContent = task ? 'タスクを編集' : '新規タスク';
+  editingOwner = owner || null;
+  const assigneeField = document.getElementById('f-assignee-field');
+  const assigneeSelect = document.getElementById('f-assignee');
+  if(!task && currentGroupId){
+    assigneeField.style.display = 'block';
+    assigneeSelect.innerHTML = `<option value="">自分</option>` + groupMembers.map(n => `<option value="${escapeHTML(n)}">${escapeHTML(n)}</option>`).join('');
+    assigneeSelect.value = '';
+  } else {
+    assigneeField.style.display = 'none';
+  }
+  document.getElementById('modal-title').textContent = task ? (owner ? `${owner}さんのタスクを変更` : 'タスクを編集') : '新規タスク';
   document.getElementById('f-name').value = task ? task.name : '';
   document.getElementById('f-detail').value = task ? task.detail : '';
   document.getElementById('f-remind').value = task && task.remindBefore ? String(task.remindBefore) : '';
@@ -1022,7 +1023,7 @@ function openModal(task){
   overlay.classList.add('show');
   document.getElementById('f-name').focus();
 }
-function closeModal(){ overlay.classList.remove('show'); form.reset(); editingId = null; }
+function closeModal(){ overlay.classList.remove('show'); form.reset(); editingId = null; editingOwner = null; }
 function updatePrioUI(){
   document.querySelectorAll('#prio-select .prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === selectedPriority));
 }
@@ -1047,14 +1048,37 @@ form.addEventListener('submit', async e=>{
   const dueAt = new Date(`${date}T${time}:00`).toISOString();
   try{
     if(editingId){
-      await apiUpdateTask({ id: editingId, name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence, resetAlert: true });
-      showToast('タスクを更新しました');
+      if(editingOwner){
+        const res = await fetch('/api/people', {
+          method:'POST',
+          headers:{'Content-Type':'application/json', ...authHeaders()},
+          body: JSON.stringify({ action:'edit-task', targetUsername: editingOwner, taskId: editingId, name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence })
+        });
+        const data = await res.json();
+        if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
+        showToast('タスクを変更しました');
+      } else {
+        await apiUpdateTask({ id: editingId, name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence, resetAlert: true });
+        showToast('タスクを更新しました');
+      }
     } else {
-      await apiCreateTask({ name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence });
-      showToast('タスクを追加しました');
+      const assigneeValue = document.getElementById('f-assignee').value;
+      if(assigneeValue){
+        const res = await fetch('/api/group-tasks', {
+          method:'POST',
+          headers:{'Content-Type':'application/json', ...authHeaders()},
+          body: JSON.stringify({ scope:'individual', targetUsername: assigneeValue, name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence })
+        });
+        const data = await res.json();
+        if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
+        showToast(`${assigneeValue}さんのタスクとして追加しました`);
+      } else {
+        await apiCreateTask({ name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence });
+        showToast('タスクを追加しました');
+      }
     }
     closeModal();
-    if(viewMode === 'self') await loadTaskDisplay();
+    await loadTaskDisplay();
   }catch(err){ showToast(err.message); }
 });
 
@@ -1250,67 +1274,6 @@ document.getElementById('group-task-form').addEventListener('submit', async e=>{
     showToast(sendUrgent ? 'グループタスクを追加し、メッセージを送信しました' : 'グループタスクを追加しました');
     groupTaskOverlay.classList.remove('show');
     if(viewMode === 'self') await loadTaskDisplay();
-  }catch(err){ showToast('通信エラーが発生しました'); }
-});
-
-/* ---------- Individual task assignment modal ---------- */
-const assignTaskOverlay = document.getElementById('assign-task-overlay');
-const assignTaskForm = document.getElementById('assign-task-form');
-let atSelectedPriority = 3;
-
-document.getElementById('open-assign-task-btn').addEventListener('click', async ()=>{
-  assignTaskForm.reset();
-  atSelectedPriority = 3;
-  document.querySelectorAll('#at-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === 3));
-  const sel = document.getElementById('at-target');
-  sel.innerHTML = '<option value="">選択してください</option>';
-  try{
-    const res = await fetch('/api/people?type=assignable', { headers: authHeaders() });
-    if(res.ok){
-      const data = await res.json();
-      data.usernames.forEach(name => {
-        const opt = document.createElement('option');
-        opt.value = name; opt.textContent = name;
-        sel.appendChild(opt);
-      });
-    }
-  }catch(e){}
-  const now = new Date(); now.setMinutes(now.getMinutes()+30);
-  const pad = n => String(n).padStart(2,'0');
-  document.getElementById('at-date').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
-  document.getElementById('at-time').value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  document.getElementById('at-remind').value = '';
-  assignTaskOverlay.classList.add('show');
-});
-document.getElementById('at-cancel-btn').addEventListener('click', ()=> assignTaskOverlay.classList.remove('show'));
-assignTaskOverlay.addEventListener('click', e=>{ if(e.target === assignTaskOverlay) assignTaskOverlay.classList.remove('show'); });
-document.getElementById('at-prio-select').addEventListener('click', e=>{
-  const opt = e.target.closest('.prio-opt'); if(!opt) return;
-  atSelectedPriority = Number(opt.dataset.p);
-  document.querySelectorAll('#at-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', el === opt));
-});
-
-assignTaskForm.addEventListener('submit', async e=>{
-  e.preventDefault();
-  const targetUsername = document.getElementById('at-target').value;
-  const name = document.getElementById('at-name').value.trim();
-  const detail = document.getElementById('at-detail').value.trim();
-  const date = document.getElementById('at-date').value;
-  const time = document.getElementById('at-time').value;
-  const remindBefore = document.getElementById('at-remind').value || null;
-  if(!targetUsername || !name || !date || !time) return;
-  const dueAt = new Date(`${date}T${time}:00`).toISOString();
-  try{
-    const res = await fetch('/api/group-tasks', {
-      method:'POST',
-      headers:{'Content-Type':'application/json', ...authHeaders()},
-      body: JSON.stringify({ scope:'individual', targetUsername, name, detail, dueAt, priority: atSelectedPriority, remindBefore })
-    });
-    const data = await res.json();
-    if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
-    showToast(`${targetUsername}さんにタスクを割り当てました`);
-    assignTaskOverlay.classList.remove('show');
-    if(viewMode === 'all' || viewMode === targetUsername) await loadTaskDisplay();
   }catch(err){ showToast('通信エラーが発生しました'); }
 });
 
