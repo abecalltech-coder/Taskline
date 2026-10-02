@@ -226,10 +226,6 @@
         </div>
         低 → 高
       </div>
-      <div class="toolbar-buttons">
-        <button class="btn-primary" id="open-add-btn">＋ 個人タスク</button>
-        <button class="btn-outline" id="open-group-task-btn" style="display:none;">＋ グループタスク</button>
-      </div>
     </div>
 
     <div id="task-display"></div>
@@ -264,6 +260,10 @@
   <div class="modal">
     <h3 id="modal-title">新規タスク</h3>
     <form id="task-form">
+      <div class="field" id="f-group-field" style="display:none;">
+        <label for="f-group-select">グループ</label>
+        <select id="f-group-select"></select>
+      </div>
       <div class="field" id="f-assignee-field" style="display:none;">
         <label>担当者</label>
         <div class="multiselect" id="f-assignee-multiselect">
@@ -784,6 +784,9 @@ let viewMode = 'self'; // 'self' | 'all' | <username>
 let personalTasks = [];
 let groupTasksAll = [];
 let currentDisplayList = [];
+let adminManagedGroupsData = {};
+let modalAssigneeGroupId = null;
+let modalAssigneeMembers = [];
 
 async function refreshTasks(){
   try{
@@ -797,7 +800,6 @@ async function refreshTasks(){
 async function initTasksTab(){
   if(!meInfo) return;
   const wrap = document.getElementById('group-selector-wrap');
-  const groupTaskBtn = document.getElementById('open-group-task-btn');
 
   if(meInfo.isAdmin){
     wrap.innerHTML = `<div class="group-selector-row"><label style="font-size:12.5px;color:var(--ink-soft);">グループ：</label><select id="group-selector"><option value="">（グループなし／自分のみ）</option></select></div>`;
@@ -805,6 +807,7 @@ async function initTasksTab(){
     try{
       const res = await fetch('/api/people?type=managed-groups', { headers: authHeaders() });
       const data = await res.json();
+      adminManagedGroupsData = data.groups;
       Object.entries(data.groups).forEach(([groupId, g]) => {
         const opt = document.createElement('option');
         opt.value = groupId; opt.textContent = g.name;
@@ -831,10 +834,20 @@ async function initTasksTab(){
     currentGroupCanManage = false;
   }
 
-  groupTaskBtn.style.display = currentGroupId ? 'inline-block' : 'none';
-
   await setupGroupMembers();
   await loadTaskDisplay();
+}
+
+async function fetchGroupMembersForModal(groupId){
+  if(!groupId) return [];
+  try{
+    const res = await fetch(`/api/people?type=group-members&groupId=${encodeURIComponent(groupId)}`, { headers: authHeaders() });
+    if(res.ok){
+      const data = await res.json();
+      return data.members.filter(name => name !== authUsername);
+    }
+  }catch(e){}
+  return [];
 }
 
 async function setupGroupMembers(){
@@ -1037,9 +1050,9 @@ const form = document.getElementById('task-form');
 
 let editingOwner = null;
 
-function buildAssigneePanel(){
+function buildAssigneePanel(members){
   const panel = document.getElementById('f-assignee-panel');
-  const options = [{ value: authUsername, label: '自分' }, { value: '__all__', label: '全員' }, ...groupMembers.map(n => ({ value: n, label: n }))];
+  const options = [{ value: authUsername, label: '自分' }, { value: '__all__', label: '全員' }, ...(members||[]).map(n => ({ value: n, label: n }))];
   panel.innerHTML = options.map((o, i) =>
     (i === 2 ? '<div class="multiselect-divider"></div>' : '') +
     `<label class="multiselect-option"><input type="checkbox" value="${escapeHTML(o.value)}">${escapeHTML(o.label)}</label>`
@@ -1080,16 +1093,63 @@ document.addEventListener('click', e => {
   if(ms && !ms.contains(e.target)) document.getElementById('f-assignee-panel').classList.remove('show');
 });
 
+async function onModalGroupChange(){
+  const groupSelect = document.getElementById('f-group-select');
+  const assigneeField = document.getElementById('f-assignee-field');
+  modalAssigneeGroupId = groupSelect.value || null;
+  if(modalAssigneeGroupId){
+    modalAssigneeMembers = await fetchGroupMembersForModal(modalAssigneeGroupId);
+    assigneeField.style.display = 'block';
+    buildAssigneePanel(modalAssigneeMembers);
+    updateAssigneeToggleLabel();
+  } else {
+    modalAssigneeMembers = [];
+    assigneeField.style.display = 'none';
+    document.getElementById('f-assignee-panel').classList.remove('show');
+  }
+}
+document.getElementById('f-group-select').addEventListener('change', onModalGroupChange);
+
 function openModal(task, owner){
   editingId = task ? task.id : null;
   editingOwner = owner || null;
+  const groupField = document.getElementById('f-group-field');
+  const groupSelect = document.getElementById('f-group-select');
   const assigneeField = document.getElementById('f-assignee-field');
-  if(!task && currentGroupId){
+
+  if(!task && meInfo && meInfo.isAdmin){
+    groupField.style.display = 'block';
+    let options = `<option value="">（個人タスク／グループなし）</option>`;
+    for(const [gid, g] of Object.entries(adminManagedGroupsData||{})){
+      options += `<option value="${gid}">${escapeHTML(g.name)}</option>`;
+    }
+    groupSelect.innerHTML = options;
+    groupSelect.value = currentGroupId || '';
+    modalAssigneeGroupId = groupSelect.value || null;
+    if(modalAssigneeGroupId){
+      assigneeField.style.display = 'block';
+      fetchGroupMembersForModal(modalAssigneeGroupId).then(members => {
+        modalAssigneeMembers = members;
+        buildAssigneePanel(modalAssigneeMembers);
+        updateAssigneeToggleLabel();
+      });
+    } else {
+      modalAssigneeMembers = [];
+      assigneeField.style.display = 'none';
+    }
+    document.getElementById('f-assignee-panel').classList.remove('show');
+  } else if(!task && currentGroupId){
+    groupField.style.display = 'none';
+    modalAssigneeGroupId = currentGroupId;
+    modalAssigneeMembers = groupMembers;
     assigneeField.style.display = 'block';
-    buildAssigneePanel();
+    buildAssigneePanel(modalAssigneeMembers);
     updateAssigneeToggleLabel();
     document.getElementById('f-assignee-panel').classList.remove('show');
   } else {
+    groupField.style.display = 'none';
+    modalAssigneeGroupId = null;
+    modalAssigneeMembers = [];
     assigneeField.style.display = 'none';
     document.getElementById('f-assignee-panel').classList.remove('show');
   }
@@ -1122,7 +1182,6 @@ document.getElementById('prio-select').addEventListener('click', e=>{
   const opt = e.target.closest('.prio-opt'); if(!opt) return;
   selectedPriority = Number(opt.dataset.p); updatePrioUI();
 });
-document.getElementById('open-add-btn').addEventListener('click', ()=> openModal(null));
 document.getElementById('fab-add-btn').addEventListener('click', ()=> openModal(null));
 document.getElementById('cancel-btn').addEventListener('click', closeModal);
 overlay.addEventListener('click', e=>{ if(e.target === overlay) closeModal(); });
@@ -1152,7 +1211,7 @@ form.addEventListener('submit', async e=>{
         await apiUpdateTask({ id: editingId, name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence, resetAlert: true });
         showToast('タスクを更新しました');
       }
-    } else if(!currentGroupId){
+    } else if(!modalAssigneeGroupId){
       await apiCreateTask({ name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence });
       showToast('タスクを追加しました');
     } else {
@@ -1163,7 +1222,7 @@ form.addEventListener('submit', async e=>{
         const res = await fetch('/api/group-tasks', {
           method:'POST',
           headers:{'Content-Type':'application/json', ...authHeaders()},
-          body: JSON.stringify({ groupId: currentGroupId, name, detail, dueAt, priority: selectedPriority, assignedTo: isAll ? [] : finalNames, remindBefore, recurrence, sendUrgent: false })
+          body: JSON.stringify({ groupId: modalAssigneeGroupId, name, detail, dueAt, priority: selectedPriority, assignedTo: isAll ? [] : finalNames, remindBefore, recurrence, sendUrgent: false })
         });
         const data = await res.json();
         if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
@@ -1373,7 +1432,6 @@ async function openGroupTaskModal(task){
   groupTaskOverlay.classList.add('show');
 }
 
-document.getElementById('open-group-task-btn').addEventListener('click', ()=> openGroupTaskModal(null));
 document.getElementById('gt-cancel-btn').addEventListener('click', ()=> { groupTaskOverlay.classList.remove('show'); editingGroupTaskId = null; });
 groupTaskOverlay.addEventListener('click', e=>{ if(e.target === groupTaskOverlay){ groupTaskOverlay.classList.remove('show'); editingGroupTaskId = null; } });
 
