@@ -117,6 +117,16 @@ module.exports = async (req, res) => {
     const now = new Date();
     const users = await getUsers();
     const usernames = Object.keys(users);
+    const groups = await getGroups();
+
+    // メンバー名 -> そのグループの責任者名（本人が責任者の場合はnull）
+    const leaderOfUser = {};
+    for (const [uname, u] of Object.entries(users)) {
+      const group = u.groupId && groups[u.groupId];
+      if (group && group.leaderUsername && group.leaderUsername !== uname) {
+        leaderOfUser[uname] = group.leaderUsername;
+      }
+    }
 
     let totalChecked = 0;
     let totalNotified = 0;
@@ -135,17 +145,29 @@ module.exports = async (req, res) => {
         const due = new Date(task.dueAt);
         const effective = task.snoozeUntil ? new Date(task.snoozeUntil) : due;
 
+        const leaderUsername = leaderOfUser[username];
+
         if (effective <= now && !task.alerted) {
           task.alerted = true;
           task.snoozeUntil = null;
           changed = true;
-          const payload = JSON.stringify({
+          const bodyText = `期日：${dueDisplay(task.dueAt)}${task.detail ? '\n' + task.detail : ''}`;
+          const ownerPayload = JSON.stringify({
             taskId: task.id,
             title: `${task.name}`,
-            body: `期日：${dueDisplay(task.dueAt)}${task.detail ? '\n' + task.detail : ''}`,
+            body: bodyText,
             priority: task.priority
           });
-          await pushToUsernames([username], payload, debugErrors);
+          await pushToUsernames([username], ownerPayload, debugErrors);
+          if (leaderUsername) {
+            const leaderPayload = JSON.stringify({
+              taskId: task.id,
+              title: `👤[${username}] ${task.name}`,
+              body: bodyText,
+              priority: task.priority
+            });
+            await pushToUsernames([leaderUsername], leaderPayload, debugErrors);
+          }
           totalNotified++;
         }
 
@@ -154,13 +176,23 @@ module.exports = async (req, res) => {
           if (remindTime <= now && due > now) {
             task.remindAlerted = true;
             changed = true;
-            const payload = JSON.stringify({
+            const bodyText = `${remindLabel(task.remindBefore)}です。期日：${dueDisplay(task.dueAt)}${task.detail ? '\n' + task.detail : ''}`;
+            const ownerPayload = JSON.stringify({
               taskId: task.id,
               title: `⏰ 事前通知：${task.name}`,
-              body: `${remindLabel(task.remindBefore)}です。期日：${dueDisplay(task.dueAt)}${task.detail ? '\n' + task.detail : ''}`,
+              body: bodyText,
               priority: task.priority
             });
-            await pushToUsernames([username], payload, debugErrors);
+            await pushToUsernames([username], ownerPayload, debugErrors);
+            if (leaderUsername) {
+              const leaderPayload = JSON.stringify({
+                taskId: task.id,
+                title: `⏰ 事前通知：👤[${username}] ${task.name}`,
+                body: bodyText,
+                priority: task.priority
+              });
+              await pushToUsernames([leaderUsername], leaderPayload, debugErrors);
+            }
             totalNotified++;
           }
         }
@@ -174,7 +206,6 @@ module.exports = async (req, res) => {
     }
 
     /* ---- グループタスク ---- */
-    const groups = await getGroups();
     for (const [groupId, group] of Object.entries(groups)) {
       const tasks = await getGroupTasks(groupId);
       totalChecked += tasks.length;

@@ -152,6 +152,14 @@
   .admin-badge.admin{background:#FDF1D8;border-color:#F0D89A;color:#8A6300;}
   .admin-badge.leader{background:#E7F7EF;border-color:#B9E6CC;color:#1F7A4E;}
   .admin-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .multiselect{position:relative;}
+  .multiselect-toggle{width:100%;text-align:left;border:1px solid var(--line-strong);border-radius:10px;padding:10px 12px;font-size:14.5px;font-family:var(--font-body);color:var(--ink);background:var(--surface-alt);cursor:pointer;}
+  .multiselect-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--line-strong);border-radius:10px;box-shadow:var(--shadow);padding:6px;max-height:220px;overflow-y:auto;z-index:150;}
+  .multiselect-panel.show{display:block;}
+  .multiselect-option{display:flex;align-items:center;gap:8px;padding:8px 8px;font-size:13.5px;cursor:pointer;border-radius:6px;}
+  .multiselect-option:hover{background:var(--surface-alt);}
+  .multiselect-option input{width:auto;margin:0;}
+  .multiselect-divider{height:1px;background:var(--line);margin:4px 2px;}
 </style>
 </head>
 <body>
@@ -257,8 +265,11 @@
     <h3 id="modal-title">新規タスク</h3>
     <form id="task-form">
       <div class="field" id="f-assignee-field" style="display:none;">
-        <label for="f-assignee">担当者</label>
-        <select id="f-assignee"></select>
+        <label>担当者</label>
+        <div class="multiselect" id="f-assignee-multiselect">
+          <button type="button" class="multiselect-toggle" id="f-assignee-toggle">自分</button>
+          <div class="multiselect-panel" id="f-assignee-panel"></div>
+        </div>
       </div>
       <div class="field"><label for="f-name">タスク名</label><input type="text" id="f-name" placeholder="例：見積書を送付する" required></div>
       <div class="field"><label for="f-detail">詳細</label><textarea id="f-detail" placeholder="タスクの詳細を入力"></textarea></div>
@@ -674,9 +685,12 @@ function taskCardHTML(t){
   } else if(t._source === 'readonly'){
     if(t._canEdit) actions.push(`<button data-action="edit-other">変更</button>`);
     if(t._canNudge) actions.push(`<button class="urgent-btn" data-action="nudge">催促する</button>`);
+  } else if(t._source === 'group-readonly'){
+    if(t._canEdit) actions.push(`<button data-action="gedit-other">変更</button>`);
+    if(t._canUrgent) actions.push(`<button class="urgent-btn" data-action="gurgent-other">至急連絡</button>`);
   }
   const ownerTag = t._owner ? `<span class="owner-tag">${escapeHTML(t._owner)}</span>` : '';
-  const assigneeInfo = t._source === 'group'
+  const assigneeInfo = (t._source === 'group' || t._source === 'group-readonly')
     ? `<div class="created-by">作成者：${escapeHTML(t.createdBy || '')} ／ 担当：${escapeHTML((t.assignedTo && t.assignedTo.length) ? t.assignedTo.join('、') : 'グループ全員')}</div>`
     : (t.assignedBy ? `<div class="created-by">📌 ${escapeHTML(t.assignedBy)}さんから割り当て</div>` : '');
   return `
@@ -905,7 +919,21 @@ async function loadMergedView(usernames){
       const data = await res.json();
       return data.tasks.map(t => ({ ...t, _source: 'readonly', _owner: name, _canEdit: name !== authUsername, _canNudge: name !== authUsername }));
     }));
-    currentDisplayList = results.flat();
+
+    let groupPortion = [];
+    if(currentGroupId){
+      try{
+        const gRes = await fetch(`/api/group-tasks?groupId=${encodeURIComponent(currentGroupId)}`, { headers: authHeaders() });
+        if(gRes.ok){
+          const allGroupTasks = await gRes.json();
+          groupPortion = allGroupTasks
+            .filter(t => !t.assignedTo || t.assignedTo.length === 0 || t.assignedTo.some(n => usernames.includes(n)))
+            .map(t => ({ ...t, _source: 'group-readonly', _owner: (t.assignedTo && t.assignedTo.length) ? t.assignedTo.join('、') : 'グループ全体', _canEdit: true, _canUrgent: currentGroupCanManage }));
+        }
+      }catch(e){}
+    }
+
+    currentDisplayList = [...results.flat(), ...groupPortion];
     renderTaskList(currentDisplayList, 'タスクはありません。');
   }catch(e){
     container.innerHTML = `<div class="empty-state">通信エラーが発生しました。</div>`;
@@ -975,6 +1003,25 @@ document.getElementById('task-display').addEventListener('click', async e=>{
     }
     return;
   }
+
+  if(task._source === 'group-readonly'){
+    if(action === 'gedit-other'){
+      openGroupTaskModal(task);
+    } else if(action === 'gurgent-other'){
+      const message = prompt(`「${task.name}」について送るメッセージを入力してください`, '至急対応をお願いします');
+      if(message === null) return;
+      try{
+        await fetch('/api/group-tasks', {
+          method:'PATCH',
+          headers:{'Content-Type':'application/json', ...authHeaders()},
+          body: JSON.stringify({ groupId: currentGroupId, id, sendUrgent: true, urgentMessage: message })
+        });
+        showToast('至急連絡を送信しました');
+        await loadTaskDisplay();
+      }catch(err){ showToast('通信エラーが発生しました'); }
+    }
+    return;
+  }
 });
 
 async function groupTaskPatch(payload){
@@ -990,17 +1037,61 @@ const form = document.getElementById('task-form');
 
 let editingOwner = null;
 
+function buildAssigneePanel(){
+  const panel = document.getElementById('f-assignee-panel');
+  const options = [{ value: authUsername, label: '自分' }, { value: '__all__', label: '全員' }, ...groupMembers.map(n => ({ value: n, label: n }))];
+  panel.innerHTML = options.map((o, i) =>
+    (i === 2 ? '<div class="multiselect-divider"></div>' : '') +
+    `<label class="multiselect-option"><input type="checkbox" value="${escapeHTML(o.value)}">${escapeHTML(o.label)}</label>`
+  ).join('');
+  panel.querySelectorAll('input[type=checkbox]').forEach(input => {
+    input.addEventListener('change', () => {
+      if(input.value === '__all__' && input.checked){
+        panel.querySelectorAll('input[type=checkbox]').forEach(i => { if(i !== input) i.checked = false; });
+      } else if(input.checked){
+        const allCb = panel.querySelector('input[value="__all__"]');
+        if(allCb) allCb.checked = false;
+      }
+      updateAssigneeToggleLabel();
+    });
+  });
+}
+function updateAssigneeToggleLabel(){
+  const panel = document.getElementById('f-assignee-panel');
+  const toggle = document.getElementById('f-assignee-toggle');
+  const checked = Array.from(panel.querySelectorAll('input:checked'));
+  if(checked.length === 0){ toggle.textContent = '自分'; return; }
+  if(checked.some(c => c.value === '__all__')){ toggle.textContent = '全員'; return; }
+  toggle.textContent = checked.map(c => c.value === authUsername ? '自分' : c.value).join('、');
+}
+function getSelectedAssignees(){
+  const panel = document.getElementById('f-assignee-panel');
+  const checked = Array.from(panel.querySelectorAll('input:checked'));
+  const isAll = checked.some(c => c.value === '__all__');
+  const names = checked.filter(c => c.value !== '__all__').map(c => c.value);
+  return { isAll, names };
+}
+document.getElementById('f-assignee-toggle').addEventListener('click', e => {
+  e.stopPropagation();
+  document.getElementById('f-assignee-panel').classList.toggle('show');
+});
+document.addEventListener('click', e => {
+  const ms = document.getElementById('f-assignee-multiselect');
+  if(ms && !ms.contains(e.target)) document.getElementById('f-assignee-panel').classList.remove('show');
+});
+
 function openModal(task, owner){
   editingId = task ? task.id : null;
   editingOwner = owner || null;
   const assigneeField = document.getElementById('f-assignee-field');
-  const assigneeSelect = document.getElementById('f-assignee');
   if(!task && currentGroupId){
     assigneeField.style.display = 'block';
-    assigneeSelect.innerHTML = `<option value="">自分</option>` + groupMembers.map(n => `<option value="${escapeHTML(n)}">${escapeHTML(n)}</option>`).join('');
-    assigneeSelect.value = '';
+    buildAssigneePanel();
+    updateAssigneeToggleLabel();
+    document.getElementById('f-assignee-panel').classList.remove('show');
   } else {
     assigneeField.style.display = 'none';
+    document.getElementById('f-assignee-panel').classList.remove('show');
   }
   document.getElementById('modal-title').textContent = task ? (owner ? `${owner}さんのタスクを変更` : 'タスクを編集') : '新規タスク';
   document.getElementById('f-name').value = task ? task.name : '';
@@ -1061,20 +1152,37 @@ form.addEventListener('submit', async e=>{
         await apiUpdateTask({ id: editingId, name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence, resetAlert: true });
         showToast('タスクを更新しました');
       }
+    } else if(!currentGroupId){
+      await apiCreateTask({ name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence });
+      showToast('タスクを追加しました');
     } else {
-      const assigneeValue = document.getElementById('f-assignee').value;
-      if(assigneeValue){
+      const { isAll, names } = getSelectedAssignees();
+      const finalNames = names.length ? names : [authUsername];
+
+      if(isAll || finalNames.length > 1){
         const res = await fetch('/api/group-tasks', {
           method:'POST',
           headers:{'Content-Type':'application/json', ...authHeaders()},
-          body: JSON.stringify({ scope:'individual', targetUsername: assigneeValue, name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence })
+          body: JSON.stringify({ groupId: currentGroupId, name, detail, dueAt, priority: selectedPriority, assignedTo: isAll ? [] : finalNames, remindBefore, recurrence, sendUrgent: false })
         });
         const data = await res.json();
         if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
-        showToast(`${assigneeValue}さんのタスクとして追加しました`);
+        showToast(isAll ? 'グループ全体のタスクとして追加しました' : `${finalNames.join('、')}さん宛のタスクとして追加しました`);
       } else {
-        await apiCreateTask({ name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence });
-        showToast('タスクを追加しました');
+        const target = finalNames[0];
+        if(target === authUsername){
+          await apiCreateTask({ name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence });
+          showToast('タスクを追加しました');
+        } else {
+          const res = await fetch('/api/group-tasks', {
+            method:'POST',
+            headers:{'Content-Type':'application/json', ...authHeaders()},
+            body: JSON.stringify({ scope:'individual', targetUsername: target, name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence })
+          });
+          const data = await res.json();
+          if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
+          showToast(`${target}さんのタスクとして追加しました`);
+        }
       }
     }
     closeModal();
@@ -1203,6 +1311,7 @@ async function becomeAdmin(){
 
 /* ---------- Group task creation modal ---------- */
 let gtSelectedPriority = 3;
+let editingGroupTaskId = null;
 
 async function populateGroupAssigneeOptions(){
   const container = document.getElementById('gt-assignee-list');
@@ -1230,22 +1339,43 @@ document.getElementById('gt-prio-select').addEventListener('click', e=>{
 });
 
 const groupTaskOverlay = document.getElementById('group-task-overlay');
-document.getElementById('open-group-task-btn').addEventListener('click', async ()=>{
+
+async function openGroupTaskModal(task){
   if(!currentGroupId) return;
+  editingGroupTaskId = task ? task.id : null;
   document.getElementById('group-task-form').reset();
-  gtSelectedPriority = 3;
-  document.querySelectorAll('#gt-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === 3));
-  document.getElementById('gt-urgent-field').style.display = currentGroupCanManage ? 'block' : 'none';
-  resetRecurrenceUI('gt');
+  document.querySelector('#group-task-overlay h3').textContent = task ? 'グループタスクを編集' : 'グループタスクを追加';
+  gtSelectedPriority = task ? task.priority : 3;
+  document.querySelectorAll('#gt-prio-select .prio-opt').forEach(el => el.classList.toggle('selected', Number(el.dataset.p) === gtSelectedPriority));
+  document.getElementById('gt-urgent-field').style.display = (!task && currentGroupCanManage) ? 'block' : 'none';
+  document.getElementById('gt-name').value = task ? task.name : '';
+  document.getElementById('gt-detail').value = task ? task.detail : '';
+  document.getElementById('gt-remind').value = task && task.remindBefore ? String(task.remindBefore) : '';
+  applyRecurrenceUI('gt', task ? task.recurrence : null);
   await populateGroupAssigneeOptions();
-  const now = new Date(); now.setMinutes(now.getMinutes()+30);
+  if(task && task.assignedTo){
+    document.querySelectorAll('#gt-assignee-list input[type=checkbox]').forEach(input => {
+      const checked = task.assignedTo.includes(input.value);
+      input.checked = checked;
+      input.closest('.checkbox-pill').classList.toggle('checked', checked);
+    });
+  }
   const pad = n => String(n).padStart(2,'0');
-  document.getElementById('gt-date').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
-  document.getElementById('gt-time').value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  if(task){
+    const d = new Date(task.dueAt);
+    document.getElementById('gt-date').value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    document.getElementById('gt-time').value = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } else {
+    const now = new Date(); now.setMinutes(now.getMinutes()+30);
+    document.getElementById('gt-date').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+    document.getElementById('gt-time').value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }
   groupTaskOverlay.classList.add('show');
-});
-document.getElementById('gt-cancel-btn').addEventListener('click', ()=> groupTaskOverlay.classList.remove('show'));
-groupTaskOverlay.addEventListener('click', e=>{ if(e.target === groupTaskOverlay) groupTaskOverlay.classList.remove('show'); });
+}
+
+document.getElementById('open-group-task-btn').addEventListener('click', ()=> openGroupTaskModal(null));
+document.getElementById('gt-cancel-btn').addEventListener('click', ()=> { groupTaskOverlay.classList.remove('show'); editingGroupTaskId = null; });
+groupTaskOverlay.addEventListener('click', e=>{ if(e.target === groupTaskOverlay){ groupTaskOverlay.classList.remove('show'); editingGroupTaskId = null; } });
 
 document.getElementById('group-task-form').addEventListener('submit', async e=>{
   e.preventDefault();
@@ -1254,26 +1384,36 @@ document.getElementById('group-task-form').addEventListener('submit', async e=>{
   const detail = document.getElementById('gt-detail').value.trim();
   const date = document.getElementById('gt-date').value;
   const time = document.getElementById('gt-time').value;
-  const sendUrgent = document.getElementById('gt-urgent').checked;
-  let urgentMessage = null;
-  if(sendUrgent){
-    urgentMessage = prompt('作成と同時に送るメッセージを入力してください', '至急対応をお願いします');
-    if(urgentMessage === null) return;
-  }
   const remindBefore = document.getElementById('gt-remind').value || null;
   const recurrence = readRecurrenceUI('gt');
   const assignedTo = Array.from(document.querySelectorAll('#gt-assignee-list input:checked')).map(i => i.value);
   if(!name || !date || !time) return;
   const dueAt = new Date(`${date}T${time}:00`).toISOString();
   try{
-    await fetch('/api/group-tasks', {
-      method:'POST',
-      headers:{'Content-Type':'application/json', ...authHeaders()},
-      body: JSON.stringify({ groupId: currentGroupId, name, detail, dueAt, priority: gtSelectedPriority, sendUrgent, assignedTo, remindBefore, recurrence, urgentMessage })
-    });
-    showToast(sendUrgent ? 'グループタスクを追加し、メッセージを送信しました' : 'グループタスクを追加しました');
+    if(editingGroupTaskId){
+      await fetch('/api/group-tasks', {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json', ...authHeaders()},
+        body: JSON.stringify({ groupId: currentGroupId, id: editingGroupTaskId, name, detail, dueAt, priority: gtSelectedPriority, assignedTo, remindBefore, recurrence })
+      });
+      showToast('グループタスクを更新しました');
+    } else {
+      const sendUrgent = document.getElementById('gt-urgent').checked;
+      let urgentMessage = null;
+      if(sendUrgent){
+        urgentMessage = prompt('作成と同時に送るメッセージを入力してください', '至急対応をお願いします');
+        if(urgentMessage === null) return;
+      }
+      await fetch('/api/group-tasks', {
+        method:'POST',
+        headers:{'Content-Type':'application/json', ...authHeaders()},
+        body: JSON.stringify({ groupId: currentGroupId, name, detail, dueAt, priority: gtSelectedPriority, sendUrgent, assignedTo, remindBefore, recurrence, urgentMessage })
+      });
+      showToast(sendUrgent ? 'グループタスクを追加し、メッセージを送信しました' : 'グループタスクを追加しました');
+    }
     groupTaskOverlay.classList.remove('show');
-    if(viewMode === 'self') await loadTaskDisplay();
+    editingGroupTaskId = null;
+    await loadTaskDisplay();
   }catch(err){ showToast('通信エラーが発生しました'); }
 });
 
