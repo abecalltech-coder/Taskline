@@ -46,11 +46,14 @@
   .bootstrap-banner{background:#FAEEDA;border:1px solid #EF9F27;color:#633806;font-size:12px;padding:10px 14px;border-radius:10px;max-width:920px;margin:12px auto 0;display:flex;align-items:center;justify-content:space-between;gap:10px;}
   .bootstrap-banner button{background:#633806;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--font-body);}
   .toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .toolbar-buttons{display:flex;gap:8px;flex-wrap:wrap;}
   .legend{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-soft);}
   .legend-bar{display:flex;height:8px;width:120px;border-radius:4px;overflow:hidden;border:1px solid var(--line-strong);}
   .legend-bar span{flex:1;}
   .btn-primary{background:var(--accent);color:#fff;border:none;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
   .btn-primary:hover{background:var(--accent-strong);}
+  .btn-outline{background:var(--surface);color:var(--accent-strong);border:1px solid var(--accent);padding:10px 16px;border-radius:10px;font-size:13.5px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
+  .btn-outline:hover{background:var(--accent-bg);}
   .stat-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
   .stat-chip{background:var(--surface-alt);border:1px solid var(--line);border-radius:10px;padding:9px 14px;flex:1;min-width:110px;}
   .stat-chip .num{font-family:var(--font-mono);font-size:19px;font-weight:500;line-height:1;color:var(--ink);}
@@ -75,10 +78,12 @@
   .prio-pill{font-family:var(--font-mono);font-size:11px;padding:2px 8px;border-radius:20px;color:#fff;font-weight:500;}
   .task-detail{font-size:12.5px;color:var(--ink-soft);margin-top:7px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .task-actions{display:flex;flex-direction:column;border-left:1px solid var(--line);flex:none;}
-  .task-actions button{border:none;background:transparent;width:42px;flex:1;cursor:pointer;color:var(--ink-faint);font-size:16px;display:flex;align-items:center;justify-content:center;}
+  .task-actions button{border:none;background:transparent;min-width:58px;flex:1;cursor:pointer;color:var(--ink-soft);font-size:12px;font-weight:500;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;padding:0 10px;white-space:nowrap;}
   .task-actions button:hover{background:var(--surface-alt);color:var(--ink);}
   .task-actions button.complete-btn:hover{color:var(--ok);background:var(--ok-bg);}
   .task-actions button.delete-btn:hover{color:var(--danger-ink);background:var(--danger-bg);}
+  .task-actions button.urgent-btn{color:var(--danger-ink);}
+  .task-actions button.urgent-btn:hover{background:var(--danger-bg);}
   .task-actions button + button{border-top:1px solid var(--line);}
   .empty-state{text-align:center;padding:40px 20px;color:var(--ink-faint);font-size:13.5px;background:var(--surface);border:1px dashed var(--line-strong);border-radius:var(--radius);}
   .overlay{position:fixed;inset:0;background:rgba(20,26,38,.5);display:none;align-items:flex-end;justify-content:center;z-index:100;}
@@ -112,7 +117,7 @@
   #app-root{display:none;}
   .remind-badge{font-family:var(--font-mono);font-size:10.5px;background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);padding:1px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:3px;}
   .created-by{font-size:11px;color:var(--ink-faint);margin-top:4px;}
-  .group-selector-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .group-selector-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
   .group-selector-row select{border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;font-size:13.5px;font-family:var(--font-body);background:var(--surface-alt);color:var(--ink);}
   .checkbox-list{display:flex;flex-wrap:wrap;gap:8px;}
   .checkbox-pill{display:flex;align-items:center;gap:6px;border:1px solid var(--line-strong);border-radius:20px;padding:6px 12px;font-size:12.5px;cursor:pointer;background:var(--surface-alt);}
@@ -125,29 +130,27 @@
   .nudge-btn{width:100%;margin-top:8px;background:none;border:1px solid var(--line-strong);color:var(--ink-soft);padding:7px 10px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:5px;}
   .nudge-btn:hover{background:var(--danger-bg);border-color:var(--danger-line);color:var(--danger-ink);}
   .owner-tag{font-family:var(--font-mono);font-size:10.5px;background:var(--accent-bg);color:var(--accent-strong);padding:1px 8px;border-radius:20px;}
-  .review-select-list{max-height:220px;overflow-y:auto;border:1px solid var(--line-strong);border-radius:10px;padding:6px;background:var(--surface-alt);}
-  .review-select-row{display:flex;align-items:center;gap:8px;padding:7px 8px;font-size:13.5px;cursor:pointer;border-radius:6px;}
-  .review-select-row:hover{background:var(--surface);}
-  .review-select-row input{width:auto;margin:0;}
-  .nudge-btn{background:none;border:1px solid var(--line-strong);color:var(--ink-soft);}
-  .view-toggle{display:flex;gap:6px;margin-bottom:16px;}
-  .view-toggle-btn{background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
-  .view-toggle-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
-  .calendar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-  .cal-nav-btn{background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink);width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer;}
-  .cal-month-label{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--ink);}
-  .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:20px;}
-  .cal-weekday{text-align:center;font-size:11px;color:var(--ink-faint);padding:4px 0;font-weight:500;}
-  .cal-day{aspect-ratio:1;border:1px solid var(--line);border-radius:8px;padding:4px;cursor:pointer;background:var(--surface);display:flex;flex-direction:column;gap:2px;position:relative;min-height:40px;}
-  .cal-day:hover{border-color:var(--accent);}
-  .cal-day.other-month{opacity:.35;}
-  .cal-day.today{border-color:var(--accent);border-width:2px;}
-  .cal-day.selected{background:var(--accent-bg);border-color:var(--accent);}
-  .cal-day-num{font-size:12px;font-weight:500;color:var(--ink);}
-  .cal-day-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:auto;}
-  .cal-dot{width:5px;height:5px;border-radius:50%;flex:none;}
-  .cal-day-count{position:absolute;top:2px;right:3px;font-family:var(--font-mono);font-size:9px;color:var(--ink-faint);}
-  .calendar-day-tasks-header{font-size:13px;font-weight:500;color:var(--ink-soft);margin-bottom:10px;}
+  .person-filter-wrap{margin-bottom:16px;}
+  .person-filter-bar{display:flex;flex-wrap:wrap;gap:6px;}
+  .person-filter-btn{background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);padding:7px 14px;border-radius:20px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
+  .person-filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .admin-panel{margin-top:6px;}
+  .admin-section{margin-top:20px;}
+  .admin-section h3{font-family:var(--font-display);font-size:14.5px;margin:0 0 12px;color:var(--ink);}
+  .admin-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;}
+  .admin-row input[type=text],.admin-row select{border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;font-size:13px;font-family:var(--font-body);background:var(--surface-alt);color:var(--ink);}
+  .admin-btn{border:none;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:var(--font-body);}
+  .admin-btn.primary{background:var(--accent);color:#fff;}
+  .admin-btn.secondary{background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);}
+  .admin-btn.danger{background:var(--danger-bg);color:var(--danger-ink);border:1px solid var(--danger-line);}
+  .admin-group-card{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;}
+  .admin-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .admin-table th,.admin-table td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top;}
+  .admin-table th{color:var(--ink-soft);font-weight:500;font-size:11.5px;}
+  .admin-badge{font-family:var(--font-mono);font-size:10.5px;padding:2px 7px;border-radius:20px;background:var(--surface-alt);border:1px solid var(--line-strong);color:var(--ink-soft);display:inline-block;margin-right:3px;}
+  .admin-badge.admin{background:#FDF1D8;border-color:#F0D89A;color:#8A6300;}
+  .admin-badge.leader{background:#E7F7EF;border-color:#B9E6CC;color:#1F7A4E;}
+  .admin-actions{display:flex;gap:6px;flex-wrap:wrap;}
 </style>
 </head>
 <body>
@@ -183,22 +186,27 @@
 
 <nav class="tab-bar">
   <div class="tab-bar-inner">
-    <button class="tab-btn active" data-tab="personal">個人タスク</button>
-    <button class="tab-btn" data-tab="group">グループタスク</button>
-    <button class="tab-btn" id="tab-btn-review" data-tab="review" style="display:none;">タスク確認</button>
+    <button class="tab-btn active" data-tab="tasks">タスク</button>
     <button class="tab-btn" data-tab="settings">設定</button>
   </div>
 </nav>
 
 <main>
 
-  <div class="tab-panel active" id="tab-personal">
+  <div class="tab-panel active" id="tab-tasks">
     <div class="stat-row">
       <div class="stat-chip overdue"><div class="num" id="stat-overdue">0</div><div class="lbl">期限切れ</div></div>
       <div class="stat-chip"><div class="num" id="stat-today">0</div><div class="lbl">本日期限</div></div>
       <div class="stat-chip"><div class="num" id="stat-upcoming">0</div><div class="lbl">今後の予定</div></div>
       <div class="stat-chip"><div class="num" id="stat-done">0</div><div class="lbl">完了</div></div>
     </div>
+
+    <div id="group-selector-wrap"></div>
+
+    <div class="person-filter-wrap" id="person-filter-wrap" style="display:none;">
+      <div class="person-filter-bar" id="person-filter-bar"></div>
+    </div>
+
     <div class="toolbar">
       <div class="legend">
         優先度
@@ -209,57 +217,14 @@
         </div>
         低 → 高
       </div>
-      <button class="btn-primary" id="open-add-btn">＋ 新規タスク</button>
-    </div>
-    <div class="view-toggle">
-      <button class="view-toggle-btn active" id="personal-view-calendar-btn">📅 カレンダー</button>
-      <button class="view-toggle-btn" id="personal-view-list-btn">📋 リスト</button>
-    </div>
-    <div id="personal-calendar-wrap">
-      <div class="calendar-header">
-        <button class="cal-nav-btn" id="personal-cal-prev">‹</button>
-        <div class="cal-month-label" id="personal-cal-label"></div>
-        <button class="cal-nav-btn" id="personal-cal-next">›</button>
+      <div class="toolbar-buttons">
+        <button class="btn-primary" id="open-add-btn">＋ 個人タスク</button>
+        <button class="btn-outline" id="open-group-task-btn" style="display:none;">＋ グループタスク</button>
+        <button class="btn-outline" id="open-assign-task-btn" style="display:none;">＋ 個別タスクを割り当てる</button>
       </div>
-      <div class="calendar-grid" id="personal-calendar-grid"></div>
-      <div id="personal-calendar-day-tasks"></div>
     </div>
-    <div id="personal-list-wrap" style="display:none;">
-      <div id="task-groups"></div>
-    </div>
-  </div>
 
-  <div class="tab-panel" id="tab-group">
-    <div id="group-selector-wrap"></div>
-    <div class="toolbar">
-      <div class="group-head" style="margin:0;"><h2>タスク一覧</h2></div>
-      <button class="btn-primary" id="open-group-task-btn">＋ 新規タスク</button>
-    </div>
-    <div class="view-toggle">
-      <button class="view-toggle-btn active" id="group-view-calendar-btn">📅 カレンダー</button>
-      <button class="view-toggle-btn" id="group-view-list-btn">📋 リスト</button>
-    </div>
-    <div id="group-calendar-wrap">
-      <div class="calendar-header">
-        <button class="cal-nav-btn" id="group-cal-prev">‹</button>
-        <div class="cal-month-label" id="group-cal-label"></div>
-        <button class="cal-nav-btn" id="group-cal-next">›</button>
-      </div>
-      <div class="calendar-grid" id="group-calendar-grid"></div>
-      <div id="group-calendar-day-tasks"></div>
-    </div>
-    <div id="group-list-wrap" style="display:none;">
-      <div id="group-task-list"></div>
-    </div>
-  </div>
-
-  <div class="tab-panel" id="tab-review">
-    <div class="field">
-      <label>表示する対象者（複数選択可）</label>
-      <div class="review-select-list" id="review-people-list"></div>
-    </div>
-    <button class="btn-primary" id="open-assign-task-btn" style="margin-bottom:20px;">＋ 個別タスクを割り当てる</button>
-    <div id="review-task-list"></div>
+    <div id="task-display"></div>
   </div>
 
   <div class="tab-panel" id="tab-settings">
@@ -276,14 +241,11 @@
       </div>
       <button class="btn-secondary" id="settings-notif-btn" style="flex:none;padding:8px 14px;">有効にする</button>
     </div>
-    <div class="settings-row" id="settings-admin-row" style="display:none;">
-      <div class="settings-label">管理画面</div>
-      <a class="btn-secondary" href="/admin.html" style="flex:none;padding:8px 14px;text-decoration:none;">開く</a>
-    </div>
     <div class="settings-row">
       <div class="settings-label">ログアウト</div>
       <button class="btn-secondary" id="settings-logout-btn" style="flex:none;padding:8px 14px;">ログアウト</button>
     </div>
+    <div class="admin-panel" id="admin-panel" style="display:none;"></div>
   </div>
 
 </main>
@@ -459,7 +421,7 @@
       <div class="field" id="gt-urgent-field" style="display:none;">
         <label style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--danger-ink);">
           <input type="checkbox" id="gt-urgent" style="width:auto;">
-          🔥 作成と同時にメッセージを送る
+          至急：作成と同時にメッセージを送る
         </label>
       </div>
       <div class="modal-actions">
@@ -695,14 +657,12 @@ document.getElementById('auth-submit-btn').addEventListener('click', async ()=>{
 /* ---------- Tab switching ---------- */
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', ()=>{
-    if(btn.style.display === 'none') return;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
     const tab = btn.dataset.tab;
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-' + tab).classList.add('active');
-    document.getElementById('fab-add-btn').style.display = tab === 'personal' ? 'flex' : 'none';
-    if(tab === 'group') loadGroupTab();
-    if(tab === 'review') loadReviewTab();
+    document.getElementById('fab-add-btn').style.display = tab === 'tasks' ? 'flex' : 'none';
+    if(tab === 'settings' && meInfo && meInfo.isAdmin) loadAdminPanel();
   });
 });
 document.getElementById('avatar-btn').addEventListener('click', ()=>{
@@ -735,22 +695,47 @@ async function apiDeleteTask(id){
   return res.json();
 }
 
-async function refreshTasks(){
-  try{
-    tasks = await apiGetTasks();
-    render();
-  }catch(e){
-    const el = document.getElementById('status-line');
-    if(el) el.textContent = 'サーバーに接続できません。しばらくしてから再度お試しください。';
+/* ---------- Card rendering (shared) ---------- */
+function taskCardHTML(t){
+  const color = priorityColor(t.priority);
+  const isOverdue = !t.completed && new Date(t.dueAt) < new Date();
+  const actions = [];
+  if(t._source === 'personal'){
+    actions.push(`<button class="complete-btn" data-action="complete" title="${t.completed?'未完了に戻す':'完了にする'}">${t.completed?'未完了に戻す':'完了'}</button>`);
+    actions.push(`<button data-action="edit">編集</button>`);
+    actions.push(`<button class="delete-btn" data-action="delete">削除</button>`);
+  } else if(t._source === 'group'){
+    actions.push(`<button class="complete-btn" data-action="gcomplete" title="${t.completed?'未完了に戻す':'完了にする'}">${t.completed?'未完了に戻す':'完了'}</button>`);
+    if(t._canManage) actions.push(`<button class="urgent-btn" data-action="gurgent">至急連絡</button>`);
+    actions.push(`<button class="delete-btn" data-action="gdelete">削除</button>`);
+  } else if(t._source === 'readonly'){
+    if(t._canNudge) actions.push(`<button class="urgent-btn" data-action="nudge">催促する</button>`);
   }
+  const ownerTag = t._owner ? `<span class="owner-tag">${escapeHTML(t._owner)}</span>` : '';
+  const assigneeInfo = t._source === 'group'
+    ? `<div class="created-by">作成者：${escapeHTML(t.createdBy || '')} ／ 担当：${escapeHTML((t.assignedTo && t.assignedTo.length) ? t.assignedTo.join('、') : 'グループ全員')}</div>`
+    : (t.assignedBy ? `<div class="created-by">📌 ${escapeHTML(t.assignedBy)}さんから割り当て</div>` : '');
+  return `
+  <div class="task-card ${t.completed?'done':''}" data-id="${t.id}" data-owner="${escapeHTML(t._owner||'')}">
+    <div class="p-bar" style="background:${color}"></div>
+    <div class="task-body">
+      <div class="task-top">
+        <div class="task-name ${t.completed?'done':''}">${escapeHTML(t.name)}</div>
+        <div class="prio-pill" style="background:${color}">P${t.priority} ${priorityLabel(t.priority)}</div>
+      </div>
+      <div class="task-meta">${ownerTag}<div class="due-pill ${isOverdue?'overdue':''}">🕒 ${fmtDue(t.dueAt)}</div>${t.remindBefore ? `<span class="remind-badge">⏰ ${remindLabelJs(t.remindBefore)}</span>` : ''}${t.recurrence ? `<span class="remind-badge">🔁 ${recurrenceLabelJs(t.recurrence)}</span>` : ''}</div>
+      ${t.detail ? `<div class="task-detail">${escapeHTML(t.detail)}</div>` : ''}
+      ${assigneeInfo}
+    </div>
+    ${actions.length ? `<div class="task-actions">${actions.join('')}</div>` : ''}
+  </div>`;
 }
 
-/* ---------- Personal task rendering ---------- */
-function groupTasks(){
+function groupByDue(list){
   const now = new Date();
   const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23,59,59);
-  const active = tasks.filter(t => !t.completed);
-  const done = tasks.filter(t => t.completed);
+  const active = list.filter(t => !t.completed);
+  const done = list.filter(t => t.completed);
   const overdue = active.filter(t => new Date(t.dueAt) < now).sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
   const today = active.filter(t => new Date(t.dueAt) >= now && new Date(t.dueAt) <= todayEnd).sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
   const upcoming = active.filter(t => new Date(t.dueAt) > todayEnd).sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
@@ -758,139 +743,257 @@ function groupTasks(){
   return { overdue, today, upcoming, done: doneSorted };
 }
 
-function taskCardHTML(t, isOverdue){
-  const color = priorityColor(t.priority);
-  return `
-  <div class="task-card ${t.completed?'done':''}" data-id="${t.id}">
-    <div class="p-bar" style="background:${color}"></div>
-    <div class="task-body">
-      <div class="task-top">
-        <div class="task-name ${t.completed?'done':''}">${escapeHTML(t.name)}</div>
-        <div class="prio-pill" style="background:${color}">P${t.priority} ${priorityLabel(t.priority)}</div>
-      </div>
-      <div class="task-meta"><div class="due-pill ${isOverdue?'overdue':''}">🕒 ${fmtDue(t.dueAt)}</div>${t.remindBefore ? `<span class="remind-badge">⏰ ${remindLabelJs(t.remindBefore)}</span>` : ''}${t.recurrence ? `<span class="remind-badge">🔁 ${recurrenceLabelJs(t.recurrence)}</span>` : ''}</div>
-      ${t.detail ? `<div class="task-detail">${escapeHTML(t.detail)}</div>` : ''}
-      ${t.assignedBy ? `<div class="created-by">📌 ${escapeHTML(t.assignedBy)}さんから割り当て</div>` : ''}
-    </div>
-    <div class="task-actions">
-      <button class="complete-btn" data-action="complete" title="${t.completed?'未完了に戻す':'完了にする'}">${t.completed?'↺':'✓'}</button>
-      <button data-action="edit" title="編集">✎</button>
-      <button class="delete-btn" data-action="delete" title="削除">🗑</button>
-    </div>
-  </div>`;
-}
-
-function render(){
-  const { overdue, today, upcoming, done } = groupTasks();
+function renderStats(list){
+  const { overdue, today, upcoming, done } = groupByDue(list);
   document.getElementById('stat-overdue').textContent = overdue.length;
   document.getElementById('stat-today').textContent = today.length;
   document.getElementById('stat-upcoming').textContent = upcoming.length;
   document.getElementById('stat-done').textContent = done.length;
-
-  renderPersonalList(overdue, today, upcoming, done);
-  renderPersonalCalendar();
+  return { overdue, today, upcoming, done };
 }
 
-function renderPersonalList(overdue, today, upcoming, done){
-  const container = document.getElementById('task-groups');
-  if(tasks.length === 0){
+function renderGroupedTaskList(list){
+  const container = document.getElementById('task-display');
+  const { overdue, today, upcoming, done } = renderStats(list);
+  if(list.length === 0){
     container.innerHTML = `<div class="empty-state">タスクはまだありません。右下の「＋」から新規タスクを追加してください。</div>`;
     return;
   }
   let html = '';
-  if(overdue.length){ html += `<section class="group"><div class="group-head overdue"><h2>期限切れ</h2><span class="count">${overdue.length}</span></div>${overdue.map(t=>taskCardHTML(t,true)).join('')}</section>`; }
-  if(today.length){ html += `<section class="group"><div class="group-head"><h2>本日期限</h2><span class="count">${today.length}</span></div>${today.map(t=>taskCardHTML(t,false)).join('')}</section>`; }
-  if(upcoming.length){ html += `<section class="group"><div class="group-head"><h2>今後の予定</h2><span class="count">${upcoming.length}</span></div>${upcoming.map(t=>taskCardHTML(t,false)).join('')}</section>`; }
-  if(done.length){ html += `<section class="group"><div class="group-head"><h2>完了済み</h2><span class="count">${done.length}</span></div>${done.map(t=>taskCardHTML(t,false)).join('')}</section>`; }
-  container.innerHTML = html || `<div class="empty-state">タスクはまだありません。右下の「＋」から新規タスクを追加してください。</div>`;
+  if(overdue.length){ html += `<section class="group"><div class="group-head overdue"><h2>期限切れ</h2><span class="count">${overdue.length}</span></div>${overdue.map(taskCardHTML).join('')}</section>`; }
+  if(today.length){ html += `<section class="group"><div class="group-head"><h2>本日期限</h2><span class="count">${today.length}</span></div>${today.map(taskCardHTML).join('')}</section>`; }
+  if(upcoming.length){ html += `<section class="group"><div class="group-head"><h2>今後の予定</h2><span class="count">${upcoming.length}</span></div>${upcoming.map(taskCardHTML).join('')}</section>`; }
+  if(done.length){ html += `<section class="group"><div class="group-head"><h2>完了済み</h2><span class="count">${done.length}</span></div>${done.map(taskCardHTML).join('')}</section>`; }
+  container.innerHTML = html || `<div class="empty-state">タスクはまだありません。</div>`;
 }
 
-/* ---------- Calendar view (shared helpers) ---------- */
-function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
-function buildCalendarCells(monthDate){
-  const year = monthDate.getFullYear();
-  const month = monthDate.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const startWeekday = firstDay.getDay();
-  const daysInMonth = new Date(year, month+1, 0).getDate();
-  const prevMonthDays = new Date(year, month, 0).getDate();
-  const cells = [];
-  for(let i=startWeekday-1;i>=0;i--){ cells.push({ date: new Date(year, month-1, prevMonthDays-i), otherMonth:true }); }
-  for(let d=1; d<=daysInMonth; d++){ cells.push({ date: new Date(year, month, d), otherMonth:false }); }
-  while(cells.length < 42){
-    const last = cells[cells.length-1].date;
-    const next = new Date(last); next.setDate(next.getDate()+1);
-    cells.push({ date: next, otherMonth:true });
+function renderFlatTaskList(list){
+  const container = document.getElementById('task-display');
+  renderStats(list);
+  if(list.length === 0){
+    container.innerHTML = `<div class="empty-state">タスクはありません。</div>`;
+    return;
   }
-  return cells;
-}
-function calendarGridHTML(monthDate, selectedDate, tasksList){
-  const cells = buildCalendarCells(monthDate);
-  const today = new Date();
-  const weekdayHeaders = ['日','月','火','水','木','金','土'].map(w=>`<div class="cal-weekday">${w}</div>`).join('');
-  const cellsHTML = cells.map(c=>{
-    const dayTasks = tasksList.filter(t => sameDay(new Date(t.dueAt), c.date));
-    const isToday = sameDay(c.date, today);
-    const isSelected = selectedDate && sameDay(c.date, selectedDate);
-    const dots = dayTasks.slice(0,4).map(t=>`<span class="cal-dot" style="background:${priorityColor(t.priority)}"></span>`).join('');
-    return `<div class="cal-day ${c.otherMonth?'other-month':''} ${isToday?'today':''} ${isSelected?'selected':''}" data-date="${c.date.getFullYear()}-${String(c.date.getMonth()+1).padStart(2,'0')}-${String(c.date.getDate()).padStart(2,'0')}">
-      <div class="cal-day-num">${c.date.getDate()}</div>
-      <div class="cal-day-dots">${dots}</div>
-      ${dayTasks.length>4?`<div class="cal-day-count">+${dayTasks.length-4}</div>`:''}
-    </div>`;
-  }).join('');
-  return weekdayHeaders + cellsHTML;
-}
-function parseCalDate(str){
-  const [y,m,d] = str.split('-').map(Number);
-  return new Date(y, m-1, d);
+  container.innerHTML = sortWithCompletedLast(list).map(taskCardHTML).join('');
 }
 
-let personalCalMonth = new Date();
-let personalSelectedDate = new Date();
-let personalView = 'calendar';
+/* ---------- Unified task tab state ---------- */
+let meInfo = null;
+let currentGroupId = null;
+let currentGroupCanManage = false;
+let groupMembers = [];
+let viewMode = 'self'; // 'self' | 'all' | <username>
+let personalTasks = [];
+let groupTasksAll = [];
 
-function renderPersonalCalendar(){
-  document.getElementById('personal-cal-label').textContent = `${personalCalMonth.getFullYear()}年${personalCalMonth.getMonth()+1}月`;
-  const grid = document.getElementById('personal-calendar-grid');
-  grid.innerHTML = calendarGridHTML(personalCalMonth, personalSelectedDate, tasks);
-  grid.querySelectorAll('.cal-day').forEach(el => {
-    el.addEventListener('click', ()=>{
-      personalSelectedDate = parseCalDate(el.dataset.date);
-      renderPersonalCalendar();
+async function refreshTasks(){
+  try{
+    await loadTaskDisplay();
+  }catch(e){
+    const el = document.getElementById('status-line');
+    if(el) el.textContent = 'サーバーに接続できません。しばらくしてから再度お試しください。';
+  }
+}
+
+async function initTasksTab(){
+  if(!meInfo) return;
+  const wrap = document.getElementById('group-selector-wrap');
+  const groupTaskBtn = document.getElementById('open-group-task-btn');
+  const assignBtn = document.getElementById('open-assign-task-btn');
+
+  if(meInfo.isAdmin){
+    wrap.innerHTML = `<div class="group-selector-row"><label style="font-size:12.5px;color:var(--ink-soft);">グループ：</label><select id="group-selector"><option value="">（グループなし／自分のみ）</option></select></div>`;
+    const sel = document.getElementById('group-selector');
+    try{
+      const res = await fetch('/api/people?type=managed-groups', { headers: authHeaders() });
+      const data = await res.json();
+      Object.entries(data.groups).forEach(([groupId, g]) => {
+        const opt = document.createElement('option');
+        opt.value = groupId; opt.textContent = g.name;
+        sel.appendChild(opt);
+      });
+    }catch(e){}
+    sel.value = currentGroupId || '';
+    sel.addEventListener('change', async ()=>{
+      currentGroupId = sel.value || null;
+      currentGroupCanManage = !!currentGroupId;
+      viewMode = 'self';
+      await setupGroupMembers();
+      await loadTaskDisplay();
+    });
+    currentGroupId = sel.value || null;
+    currentGroupCanManage = !!currentGroupId;
+  } else if(meInfo.groupId){
+    wrap.innerHTML = `<p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;">グループ：<strong style="color:var(--ink);">${escapeHTML(meInfo.groupName||'')}</strong></p>`;
+    currentGroupId = meInfo.groupId;
+    currentGroupCanManage = meInfo.isLeader;
+  } else {
+    wrap.innerHTML = '';
+    currentGroupId = null;
+    currentGroupCanManage = false;
+  }
+
+  groupTaskBtn.style.display = currentGroupId ? 'inline-block' : 'none';
+  assignBtn.style.display = currentGroupCanManage ? 'inline-block' : 'none';
+
+  await setupGroupMembers();
+  await loadTaskDisplay();
+}
+
+async function setupGroupMembers(){
+  const filterWrap = document.getElementById('person-filter-wrap');
+  const filterBar = document.getElementById('person-filter-bar');
+  groupMembers = [];
+  if(!currentGroupId){
+    filterWrap.style.display = 'none';
+    viewMode = 'self';
+    return;
+  }
+  try{
+    const res = await fetch(`/api/people?type=group-members&groupId=${encodeURIComponent(currentGroupId)}`, { headers: authHeaders() });
+    if(res.ok){
+      const data = await res.json();
+      groupMembers = data.members.filter(name => name !== authUsername);
+    }
+  }catch(e){}
+
+  if(groupMembers.length === 0){
+    filterWrap.style.display = 'none';
+    viewMode = 'self';
+    return;
+  }
+
+  filterWrap.style.display = 'block';
+  const pills = [];
+  pills.push(`<button class="person-filter-btn ${viewMode==='self'?'active':''}" data-person="self">自分</button>`);
+  pills.push(`<button class="person-filter-btn ${viewMode==='all'?'active':''}" data-person="all">全員</button>`);
+  groupMembers.forEach(name => {
+    pills.push(`<button class="person-filter-btn ${viewMode===name?'active':''}" data-person="${escapeHTML(name)}">${escapeHTML(name)}</button>`);
+  });
+  filterBar.innerHTML = pills.join('');
+  filterBar.querySelectorAll('.person-filter-btn').forEach(btn => {
+    btn.addEventListener('click', async ()=>{
+      viewMode = btn.dataset.person === 'self' ? 'self' : (btn.dataset.person === 'all' ? 'all' : btn.dataset.person);
+      filterBar.querySelectorAll('.person-filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+      await loadTaskDisplay();
     });
   });
-  const dayTasks = tasks.filter(t => sameDay(new Date(t.dueAt), personalSelectedDate)).sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
-  const container = document.getElementById('personal-calendar-day-tasks');
-  const label = `${personalSelectedDate.getMonth()+1}月${personalSelectedDate.getDate()}日`;
-  if(dayTasks.length === 0){
-    container.innerHTML = `<div class="calendar-day-tasks-header">${label}</div><div class="empty-state">タスクはありません。</div>`;
+}
+
+async function loadTaskDisplay(){
+  if(viewMode === 'self'){
+    await loadSelfView();
+  } else if(viewMode === 'all'){
+    await loadMergedView([authUsername, ...groupMembers]);
   } else {
-    container.innerHTML = `<div class="calendar-day-tasks-header">${label}（${dayTasks.length}件）</div>${dayTasks.map(t=>taskCardHTML(t, new Date(t.dueAt) < new Date() && !t.completed)).join('')}`;
+    await loadMergedView([viewMode]);
   }
 }
-document.getElementById('personal-cal-prev').addEventListener('click', ()=>{
-  personalCalMonth = new Date(personalCalMonth.getFullYear(), personalCalMonth.getMonth()-1, 1);
-  renderPersonalCalendar();
+
+async function loadSelfView(){
+  try{
+    personalTasks = (await apiGetTasks()).map(t => ({ ...t, _source: 'personal' }));
+  }catch(e){
+    personalTasks = [];
+  }
+  groupTasksAll = [];
+  if(currentGroupId){
+    try{
+      const res = await fetch(`/api/group-tasks?groupId=${encodeURIComponent(currentGroupId)}`, { headers: authHeaders() });
+      if(res.ok){
+        const all = await res.json();
+        groupTasksAll = all
+          .filter(t => !t.assignedTo || t.assignedTo.length === 0 || t.assignedTo.includes(authUsername))
+          .map(t => ({ ...t, _source: 'group', _canManage: currentGroupCanManage }));
+      }
+    }catch(e){}
+  }
+  renderGroupedTaskList([...personalTasks, ...groupTasksAll]);
+}
+
+async function loadMergedView(usernames){
+  const container = document.getElementById('task-display');
+  container.innerHTML = `<div class="empty-state">読み込み中…</div>`;
+  try{
+    const results = await Promise.all(usernames.map(async name => {
+      const res = await fetch(`/api/people?type=member-tasks&username=${encodeURIComponent(name)}`, { headers: authHeaders() });
+      if(!res.ok) return [];
+      const data = await res.json();
+      return data.tasks.map(t => ({ ...t, _source: 'readonly', _owner: name, _canNudge: currentGroupCanManage && name !== authUsername }));
+    }));
+    renderFlatTaskList(results.flat());
+  }catch(e){
+    container.innerHTML = `<div class="empty-state">通信エラーが発生しました。</div>`;
+  }
+}
+
+document.getElementById('task-display').addEventListener('click', async e=>{
+  const btn = e.target.closest('button[data-action]'); if(!btn) return;
+  const card = e.target.closest('.task-card');
+  const id = card.dataset.id;
+  const action = btn.dataset.action;
+
+  if(action === 'complete' || action === 'edit' || action === 'delete'){
+    const task = personalTasks.find(t => t.id === id); if(!task) return;
+    if(action === 'edit'){ openModal(task); }
+    else if(action === 'delete'){
+      if(confirm(`「${task.name}」を削除しますか？`)){
+        try{ await apiDeleteTask(id); showToast('タスクを削除しました'); await loadTaskDisplay(); }
+        catch(err){ showToast(err.message); }
+      }
+    } else if(action === 'complete'){
+      try{
+        await apiUpdateTask({ id, completed: !task.completed });
+        showToast(!task.completed ? '対応完了にしました' : '未完了に戻しました');
+        await loadTaskDisplay();
+      }catch(err){ showToast(err.message); }
+    }
+    return;
+  }
+
+  if(action === 'gcomplete' || action === 'gdelete' || action === 'gurgent'){
+    const task = groupTasksAll.find(t => t.id === id); if(!task) return;
+    if(action === 'gcomplete'){
+      await groupTaskPatch({ id, completed: !task.completed });
+      showToast(!task.completed ? '対応完了にしました' : '未完了に戻しました');
+    } else if(action === 'gdelete'){
+      if(confirm(`「${task.name}」を削除しますか？`)){
+        await fetch(`/api/group-tasks?groupId=${encodeURIComponent(currentGroupId)}&id=${encodeURIComponent(id)}`, { method:'DELETE', headers: authHeaders() });
+        showToast('削除しました');
+        await loadTaskDisplay();
+      }
+    } else if(action === 'gurgent'){
+      const message = prompt(`「${task.name}」について送るメッセージを入力してください`, '至急対応をお願いします');
+      if(message === null) return;
+      await groupTaskPatch({ id, sendUrgent: true, urgentMessage: message });
+      showToast('至急連絡を送信しました');
+    }
+    return;
+  }
+
+  if(action === 'nudge'){
+    const owner = card.dataset.owner;
+    const message = prompt(`${owner}さんに送る催促メッセージを入力してください`, '対応をお願いします');
+    if(message === null) return;
+    try{
+      const res = await fetch('/api/people', {
+        method:'POST',
+        headers:{'Content-Type':'application/json', ...authHeaders()},
+        body: JSON.stringify({ action:'nudge', targetUsername: owner, taskId: id, message })
+      });
+      const data = await res.json();
+      if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
+      showToast('催促を送信しました');
+    }catch(err){ showToast('通信エラーが発生しました'); }
+  }
 });
-document.getElementById('personal-cal-next').addEventListener('click', ()=>{
-  personalCalMonth = new Date(personalCalMonth.getFullYear(), personalCalMonth.getMonth()+1, 1);
-  renderPersonalCalendar();
-});
-document.getElementById('personal-view-calendar-btn').addEventListener('click', ()=>{
-  personalView = 'calendar';
-  document.getElementById('personal-view-calendar-btn').classList.add('active');
-  document.getElementById('personal-view-list-btn').classList.remove('active');
-  document.getElementById('personal-calendar-wrap').style.display = 'block';
-  document.getElementById('personal-list-wrap').style.display = 'none';
-});
-document.getElementById('personal-view-list-btn').addEventListener('click', ()=>{
-  personalView = 'list';
-  document.getElementById('personal-view-list-btn').classList.add('active');
-  document.getElementById('personal-view-calendar-btn').classList.remove('active');
-  document.getElementById('personal-calendar-wrap').style.display = 'none';
-  document.getElementById('personal-list-wrap').style.display = 'block';
-});
+
+async function groupTaskPatch(payload){
+  try{
+    await fetch('/api/group-tasks', { method:'PATCH', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify({ groupId: currentGroupId, ...payload }) });
+    await loadTaskDisplay();
+  }catch(e){ showToast('通信エラーが発生しました'); }
+}
 
 /* ---------- Personal task modal ---------- */
 const overlay = document.getElementById('task-overlay');
@@ -950,33 +1053,10 @@ form.addEventListener('submit', async e=>{
       await apiCreateTask({ name, detail, dueAt, priority: selectedPriority, remindBefore, recurrence });
       showToast('タスクを追加しました');
     }
-    await refreshTasks();
     closeModal();
+    if(viewMode === 'self') await loadTaskDisplay();
   }catch(err){ showToast(err.message); }
 });
-
-async function handlePersonalTaskClick(e){
-  const btn = e.target.closest('button[data-action]'); if(!btn) return;
-  const card = e.target.closest('.task-card');
-  const id = card.dataset.id;
-  const task = tasks.find(t => t.id === id); if(!task) return;
-
-  if(btn.dataset.action === 'edit'){ openModal(task); }
-  else if(btn.dataset.action === 'delete'){
-    if(confirm(`「${task.name}」を削除しますか？`)){
-      try{ await apiDeleteTask(id); await refreshTasks(); showToast('タスクを削除しました'); }
-      catch(err){ showToast(err.message); }
-    }
-  } else if(btn.dataset.action === 'complete'){
-    try{
-      await apiUpdateTask({ id, completed: !task.completed });
-      await refreshTasks();
-      showToast(!task.completed ? '対応完了にしました' : '未完了に戻しました');
-    }catch(err){ showToast(err.message); }
-  }
-}
-document.getElementById('task-groups').addEventListener('click', handlePersonalTaskClick);
-document.getElementById('personal-calendar-day-tasks').addEventListener('click', handlePersonalTaskClick);
 
 /* ---------- Push notifications ---------- */
 function urlBase64ToUint8Array(base64String){
@@ -1051,15 +1131,14 @@ document.getElementById('settings-notif-btn').addEventListener('click', async ()
   catch(err){ showToast('通知の設定に失敗しました：' + err.message); }
 });
 
-/* ---------- Admin / role info ---------- */
-let meInfo = null;
-
+/* ---------- Me info ---------- */
 async function fetchMe(){
   try{
     const res = await fetch('/api/me', { headers: authHeaders() });
     if(!res.ok) return;
     meInfo = await res.json();
     renderMeUI();
+    await initTasksTab();
   }catch(e){}
 }
 
@@ -1084,10 +1163,8 @@ function renderMeUI(){
   if(meInfo.isLeader) roles.push('責任者');
   if(meInfo.groupName) roles.push(`所属：${meInfo.groupName}`);
   document.getElementById('settings-role-label').textContent = roles.join(' ／ ');
-  document.getElementById('settings-admin-row').style.display = meInfo.isAdmin ? 'flex' : 'none';
 
-  const canManage = meInfo.isAdmin || meInfo.isLeader;
-  document.getElementById('tab-btn-review').style.display = canManage ? 'block' : 'none';
+  document.getElementById('admin-panel').style.display = meInfo.isAdmin ? 'block' : 'none';
 }
 
 async function becomeAdmin(){
@@ -1100,55 +1177,8 @@ async function becomeAdmin(){
   }catch(e){ showToast('通信エラーが発生しました'); }
 }
 
-/* ---------- Group tab ---------- */
-let currentGroupId = null;
-let currentGroupTasks = [];
+/* ---------- Group task creation modal ---------- */
 let gtSelectedPriority = 3;
-let currentGroupCanManage = false;
-
-async function loadGroupTab(){
-  const wrap = document.getElementById('group-selector-wrap');
-  const openBtn = document.getElementById('open-group-task-btn');
-  if(meInfo.isAdmin){
-    wrap.innerHTML = `<div class="group-selector-row"><label style="font-size:12.5px;color:var(--ink-soft);">グループ：</label><select id="group-selector"></select></div>`;
-    const sel = document.getElementById('group-selector');
-    try{
-      const res = await fetch('/api/people?type=managed-groups', { headers: authHeaders() });
-      const data = await res.json();
-      Object.entries(data.groups).forEach(([groupId, g]) => {
-        const opt = document.createElement('option');
-        opt.value = groupId; opt.textContent = g.name;
-        sel.appendChild(opt);
-      });
-      if(Object.keys(data.groups).length === 0){
-        wrap.innerHTML = `<div class="empty-state">まだグループがありません。管理画面から作成してください。</div>`;
-        openBtn.style.display = 'none';
-        return;
-      }
-    }catch(e){}
-    openBtn.style.display = 'inline-block';
-    currentGroupId = sel.value;
-    sel.addEventListener('change', async ()=>{
-      currentGroupId = sel.value;
-      currentGroupCanManage = true;
-      await loadGroupTaskList();
-    });
-    currentGroupCanManage = true;
-    await loadGroupTaskList();
-  } else if(meInfo.groupId){
-    wrap.innerHTML = `<p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;">グループ：<strong style="color:var(--ink);">${escapeHTML(meInfo.groupName||'')}</strong></p>`;
-    openBtn.style.display = 'inline-block';
-    currentGroupId = meInfo.groupId;
-    currentGroupCanManage = meInfo.isLeader;
-    await loadGroupTaskList();
-  } else {
-    wrap.innerHTML = `<div class="empty-state">所属しているグループがありません。</div>`;
-    openBtn.style.display = 'none';
-    document.getElementById('group-task-list').innerHTML = '';
-    currentGroupTasks = [];
-    renderGroupCalendar();
-  }
-}
 
 async function populateGroupAssigneeOptions(){
   const container = document.getElementById('gt-assignee-list');
@@ -1167,128 +1197,6 @@ async function populateGroupAssigneeOptions(){
       container.appendChild(label);
     });
   }catch(e){}
-}
-
-async function loadGroupTaskList(){
-  if(!currentGroupId) return;
-  try{
-    const res = await fetch(`/api/group-tasks?groupId=${encodeURIComponent(currentGroupId)}`, { headers: authHeaders() });
-    if(!res.ok) return;
-    currentGroupTasks = await res.json();
-    renderGroupTaskList();
-  }catch(e){}
-}
-
-function groupTaskCardHTML(t){
-  const color = priorityColor(t.priority);
-  const assigneeText = (t.assignedTo && t.assignedTo.length) ? t.assignedTo.join('、') : 'グループ全員';
-  return `
-  <div class="task-card ${t.completed?'done':''}" data-id="${t.id}">
-    <div class="p-bar" style="background:${color}"></div>
-    <div class="task-body">
-      <div class="task-top">
-        <div class="task-name ${t.completed?'done':''}">${escapeHTML(t.name)}</div>
-        <div class="prio-pill" style="background:${color}">P${t.priority} ${priorityLabel(t.priority)}</div>
-      </div>
-      <div class="task-meta"><div class="due-pill">🕒 ${fmtDue(t.dueAt)}</div>${t.remindBefore ? `<span class="remind-badge">⏰ ${remindLabelJs(t.remindBefore)}</span>` : ''}${t.recurrence ? `<span class="remind-badge">🔁 ${recurrenceLabelJs(t.recurrence)}</span>` : ''}</div>
-      ${t.detail ? `<div class="task-detail">${escapeHTML(t.detail)}</div>` : ''}
-      <div class="created-by">作成者：${escapeHTML(t.createdBy || '')} ／ 担当：${escapeHTML(assigneeText)}</div>
-    </div>
-    <div class="task-actions">
-      ${currentGroupCanManage ? `<button class="urgent-btn" data-gaction="urgent" title="催促メッセージを送る" style="color:#B23A3A;">🔥</button>` : ''}
-      <button class="complete-btn" data-gaction="complete" title="${t.completed?'未完了に戻す':'完了にする'}">${t.completed?'↺':'✓'}</button>
-      <button class="delete-btn" data-gaction="delete" title="削除">🗑</button>
-    </div>
-  </div>`;
-}
-
-function renderGroupTaskList(){
-  const container = document.getElementById('group-task-list');
-  if(currentGroupTasks.length === 0){
-    container.innerHTML = `<div class="empty-state">グループタスクはまだありません。</div>`;
-  } else {
-    const sorted = sortWithCompletedLast(currentGroupTasks);
-    container.innerHTML = sorted.map(groupTaskCardHTML).join('');
-  }
-  renderGroupCalendar();
-}
-
-let groupCalMonth = new Date();
-let groupSelectedDate = new Date();
-let groupView = 'calendar';
-
-function renderGroupCalendar(){
-  document.getElementById('group-cal-label').textContent = `${groupCalMonth.getFullYear()}年${groupCalMonth.getMonth()+1}月`;
-  const grid = document.getElementById('group-calendar-grid');
-  grid.innerHTML = calendarGridHTML(groupCalMonth, groupSelectedDate, currentGroupTasks);
-  grid.querySelectorAll('.cal-day').forEach(el => {
-    el.addEventListener('click', ()=>{
-      groupSelectedDate = parseCalDate(el.dataset.date);
-      renderGroupCalendar();
-    });
-  });
-  const dayTasks = currentGroupTasks.filter(t => sameDay(new Date(t.dueAt), groupSelectedDate)).sort((a,b)=> new Date(a.dueAt)-new Date(b.dueAt));
-  const container = document.getElementById('group-calendar-day-tasks');
-  const label = `${groupSelectedDate.getMonth()+1}月${groupSelectedDate.getDate()}日`;
-  if(dayTasks.length === 0){
-    container.innerHTML = `<div class="calendar-day-tasks-header">${label}</div><div class="empty-state">タスクはありません。</div>`;
-  } else {
-    container.innerHTML = `<div class="calendar-day-tasks-header">${label}（${dayTasks.length}件）</div>${dayTasks.map(groupTaskCardHTML).join('')}`;
-  }
-}
-document.getElementById('group-cal-prev').addEventListener('click', ()=>{
-  groupCalMonth = new Date(groupCalMonth.getFullYear(), groupCalMonth.getMonth()-1, 1);
-  renderGroupCalendar();
-});
-document.getElementById('group-cal-next').addEventListener('click', ()=>{
-  groupCalMonth = new Date(groupCalMonth.getFullYear(), groupCalMonth.getMonth()+1, 1);
-  renderGroupCalendar();
-});
-document.getElementById('group-view-calendar-btn').addEventListener('click', ()=>{
-  groupView = 'calendar';
-  document.getElementById('group-view-calendar-btn').classList.add('active');
-  document.getElementById('group-view-list-btn').classList.remove('active');
-  document.getElementById('group-calendar-wrap').style.display = 'block';
-  document.getElementById('group-list-wrap').style.display = 'none';
-});
-document.getElementById('group-view-list-btn').addEventListener('click', ()=>{
-  groupView = 'list';
-  document.getElementById('group-view-list-btn').classList.add('active');
-  document.getElementById('group-view-calendar-btn').classList.remove('active');
-  document.getElementById('group-calendar-wrap').style.display = 'none';
-  document.getElementById('group-list-wrap').style.display = 'block';
-});
-
-async function handleGroupTaskClick(e){
-  const btn = e.target.closest('button[data-gaction]'); if(!btn) return;
-  const card = e.target.closest('.task-card');
-  const id = card.dataset.id;
-  const task = currentGroupTasks.find(t => t.id === id); if(!task) return;
-
-  if(btn.dataset.gaction === 'complete'){
-    await groupTaskPatch({ id, completed: !task.completed });
-    showToast(!task.completed ? '対応完了にしました' : '未完了に戻しました');
-  } else if(btn.dataset.gaction === 'delete'){
-    if(confirm(`「${task.name}」を削除しますか？`)){
-      await fetch(`/api/group-tasks?groupId=${encodeURIComponent(currentGroupId)}&id=${encodeURIComponent(id)}`, { method:'DELETE', headers: authHeaders() });
-      await loadGroupTaskList();
-      showToast('削除しました');
-    }
-  } else if(btn.dataset.gaction === 'urgent'){
-    const message = prompt(`「${task.name}」について送るメッセージを入力してください`, '至急対応をお願いします');
-    if(message === null) return;
-    await groupTaskPatch({ id, sendUrgent: true, urgentMessage: message });
-    showToast('催促を送信しました');
-  }
-}
-document.getElementById('group-task-list').addEventListener('click', handleGroupTaskClick);
-document.getElementById('group-calendar-day-tasks').addEventListener('click', handleGroupTaskClick);
-
-async function groupTaskPatch(payload){
-  try{
-    await fetch('/api/group-tasks', { method:'PATCH', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify({ groupId: currentGroupId, ...payload }) });
-    await loadGroupTaskList();
-  }catch(e){ showToast('通信エラーが発生しました'); }
 }
 
 document.getElementById('gt-prio-select').addEventListener('click', e=>{
@@ -1341,93 +1249,7 @@ document.getElementById('group-task-form').addEventListener('submit', async e=>{
     });
     showToast(sendUrgent ? 'グループタスクを追加し、メッセージを送信しました' : 'グループタスクを追加しました');
     groupTaskOverlay.classList.remove('show');
-    await loadGroupTaskList();
-  }catch(err){ showToast('通信エラーが発生しました'); }
-});
-
-/* ---------- Review tab ---------- */
-let reviewSelectedPeople = [];
-
-async function loadReviewTab(){
-  const listEl = document.getElementById('review-people-list');
-  listEl.innerHTML = '';
-  reviewSelectedPeople = [];
-  try{
-    const res = await fetch('/api/people?type=viewable-people', { headers: authHeaders() });
-    if(!res.ok) return;
-    const data = await res.json();
-    data.usernames.forEach(name => {
-      const label = document.createElement('label');
-      label.className = 'review-select-row';
-      label.innerHTML = `<input type="checkbox" value="${escapeHTML(name)}">${escapeHTML(name)}`;
-      const input = label.querySelector('input');
-      input.addEventListener('change', ()=>{
-        reviewSelectedPeople = Array.from(document.querySelectorAll('#review-people-list input:checked')).map(i => i.value);
-        loadReviewTasks();
-      });
-      listEl.appendChild(label);
-    });
-  }catch(e){}
-  await loadReviewTasks();
-}
-
-async function loadReviewTasks(){
-  const container = document.getElementById('review-task-list');
-  if(reviewSelectedPeople.length === 0){
-    container.innerHTML = `<div class="empty-state">対象者を選択してください。</div>`;
-    return;
-  }
-  container.innerHTML = `<div class="empty-state">読み込み中…</div>`;
-  try{
-    const results = await Promise.all(reviewSelectedPeople.map(async name => {
-      const res = await fetch(`/api/people?type=member-tasks&username=${encodeURIComponent(name)}`, { headers: authHeaders() });
-      if(!res.ok) return [];
-      const data = await res.json();
-      return data.tasks.map(t => ({ ...t, ownerUsername: name }));
-    }));
-    const merged = sortWithCompletedLast(results.flat());
-    if(merged.length === 0){
-      container.innerHTML = `<div class="empty-state">タスクはありません。</div>`;
-      return;
-    }
-    container.innerHTML = merged.map(reviewTaskCardHTML).join('');
-  }catch(e){ container.innerHTML = `<div class="empty-state">通信エラーが発生しました。</div>`; }
-}
-
-function reviewTaskCardHTML(t){
-  const color = priorityColor(t.priority);
-  const isOverdue = new Date(t.dueAt) < new Date();
-  return `
-  <div class="task-card ${t.completed?'done':''}" data-id="${t.id}" data-owner="${escapeHTML(t.ownerUsername)}">
-    <div class="p-bar" style="background:${color}"></div>
-    <div class="task-body" style="padding-bottom:12px;">
-      <div class="task-top">
-        <div class="task-name ${t.completed?'done':''}">${escapeHTML(t.name)}</div>
-        <div class="prio-pill" style="background:${color}">P${t.priority} ${priorityLabel(t.priority)}</div>
-      </div>
-      <div class="task-meta"><span class="owner-tag">${escapeHTML(t.ownerUsername)}</span><div class="due-pill ${isOverdue?'overdue':''}">🕒 ${fmtDue(t.dueAt)}</div>${t.remindBefore ? `<span class="remind-badge">⏰ ${remindLabelJs(t.remindBefore)}</span>` : ''}</div>
-      ${t.detail ? `<div class="task-detail">${escapeHTML(t.detail)}</div>` : ''}
-      ${!t.completed ? `<button class="nudge-btn" data-nudge="1">📣 催促する</button>` : ''}
-    </div>
-  </div>`;
-}
-
-document.getElementById('review-task-list').addEventListener('click', async e=>{
-  const btn = e.target.closest('button[data-nudge]'); if(!btn) return;
-  const card = e.target.closest('.task-card');
-  const id = card.dataset.id;
-  const owner = card.dataset.owner;
-  const message = prompt(`${owner}さんに送る催促メッセージを入力してください`, '対応をお願いします');
-  if(message === null) return;
-  try{
-    const res = await fetch('/api/people', {
-      method:'POST',
-      headers:{'Content-Type':'application/json', ...authHeaders()},
-      body: JSON.stringify({ action:'nudge', targetUsername: owner, taskId: id, message })
-    });
-    const data = await res.json();
-    if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
-    showToast('催促を送信しました');
+    if(viewMode === 'self') await loadTaskDisplay();
   }catch(err){ showToast('通信エラーが発生しました'); }
 });
 
@@ -1488,15 +1310,189 @@ assignTaskForm.addEventListener('submit', async e=>{
     if(!res.ok){ showToast(data.error || 'エラーが発生しました'); return; }
     showToast(`${targetUsername}さんにタスクを割り当てました`);
     assignTaskOverlay.classList.remove('show');
-    if(reviewSelectedPeople.includes(targetUsername)) await loadReviewTasks();
+    if(viewMode === 'all' || viewMode === targetUsername) await loadTaskDisplay();
   }catch(err){ showToast('通信エラーが発生しました'); }
 });
 
+/* ---------- Admin panel (in-tab, admin only) ---------- */
+let adminUsersData = {};
+let adminGroupsData = {};
+
+async function loadAdminPanel(){
+  const panel = document.getElementById('admin-panel');
+  panel.innerHTML = `<div class="empty-state">読み込み中…</div>`;
+  try{
+    const res = await fetch('/api/admin', { headers: authHeaders() });
+    if(!res.ok){ panel.innerHTML = `<div class="empty-state">データの取得に失敗しました。</div>`; return; }
+    const data = await res.json();
+    adminUsersData = data.users;
+    adminGroupsData = data.groups;
+    renderAdminPanel();
+  }catch(e){ panel.innerHTML = `<div class="empty-state">通信エラーが発生しました。</div>`; }
+}
+
+function renderAdminPanel(){
+  const panel = document.getElementById('admin-panel');
+  const groupOptions = (selected) => {
+    let html = `<option value="">(未所属)</option>`;
+    for(const [gid, g] of Object.entries(adminGroupsData)){
+      html += `<option value="${gid}" ${selected===gid?'selected':''}>${escapeHTML(g.name)}</option>`;
+    }
+    return html;
+  };
+
+  const roleRank = (name, u) => {
+    if(u.isAdmin) return 0;
+    const group = u.groupId && adminGroupsData[u.groupId] ? adminGroupsData[u.groupId] : null;
+    if(group && group.leaderUsername === name) return 1;
+    return 2;
+  };
+  const sortedUsers = Object.entries(adminUsersData).sort((a, b) => roleRank(a[0], a[1]) - roleRank(b[0], b[1]));
+
+  let usersHTML = `<table class="admin-table"><thead><tr><th>ユーザーID</th><th>権限</th><th>所属グループ</th><th>操作</th></tr></thead><tbody>`;
+  for(const [name, u] of sortedUsers){
+    const group = u.groupId && adminGroupsData[u.groupId] ? adminGroupsData[u.groupId] : null;
+    const isLeader = group && group.leaderUsername === name;
+    usersHTML += `<tr>
+      <td>${escapeHTML(name)}</td>
+      <td>${u.isAdmin ? '<span class="admin-badge admin">管理者</span>' : ''} ${isLeader ? '<span class="admin-badge leader">責任者</span>' : ''}</td>
+      <td><select data-action="assignGroup" data-username="${escapeHTML(name)}">${groupOptions(u.groupId)}</select></td>
+      <td><div class="admin-actions">
+        <button class="admin-btn secondary" data-action="resetPassword" data-username="${escapeHTML(name)}">パスワード変更</button>
+        <button class="admin-btn secondary" data-action="renameUser" data-username="${escapeHTML(name)}">IDを変更</button>
+        <button class="admin-btn secondary" data-action="toggleAdmin" data-username="${escapeHTML(name)}" data-current="${u.isAdmin?1:0}">${u.isAdmin?'管理者を解除':'管理者にする'}</button>
+        ${u.groupId ? `<button class="admin-btn secondary" data-action="toggleLeader" data-username="${escapeHTML(name)}" data-groupid="${escapeHTML(u.groupId)}" data-current="${isLeader?1:0}">${isLeader?'責任者を解除':'責任者にする'}</button>` : ''}
+        <button class="admin-btn danger" data-action="deleteUser" data-username="${escapeHTML(name)}">削除</button>
+      </div></td>
+    </tr>`;
+  }
+  usersHTML += `</tbody></table>`;
+
+  let groupsHTML = '';
+  for(const [gid, g] of Object.entries(adminGroupsData)){
+    const members = Object.entries(adminUsersData).filter(([, u]) => u.groupId === gid).map(([name]) => name);
+    let leaderOptions = `<option value="">(未設定)</option>`;
+    members.forEach(name => {
+      leaderOptions += `<option value="${escapeHTML(name)}" ${g.leaderUsername===name?'selected':''}>${escapeHTML(name)}</option>`;
+    });
+    groupsHTML += `<div class="admin-group-card">
+      <div>
+        <strong>${escapeHTML(g.name)}</strong>
+        <div style="font-size:12px;color:var(--ink-soft);margin-top:4px;">メンバー：${members.length ? members.map(escapeHTML).join('、') : 'なし'}</div>
+      </div>
+      <div class="admin-row" style="margin:0;">
+        <label style="font-size:12px;color:var(--ink-soft);">責任者：</label>
+        <select data-action="setLeader" data-groupid="${gid}">${leaderOptions}</select>
+        <button class="admin-btn danger" data-action="deleteGroup" data-groupid="${gid}">削除</button>
+      </div>
+    </div>`;
+  }
+  if(!groupsHTML) groupsHTML = `<p style="color:var(--ink-faint);font-size:13px;">まだグループがありません。</p>`;
+
+  panel.innerHTML = `
+    <div class="admin-section">
+      <h3>グループ管理</h3>
+      <div class="admin-row">
+        <input type="text" id="new-group-name" placeholder="新しいグループ名">
+        <button class="admin-btn primary" id="create-group-btn">＋ グループを作成</button>
+      </div>
+      ${groupsHTML}
+    </div>
+    <div class="admin-section">
+      <h3>登録者一覧</h3>
+      ${usersHTML}
+    </div>
+  `;
+
+  document.getElementById('create-group-btn').addEventListener('click', adminCreateGroup);
+  panel.querySelectorAll('select[data-action="assignGroup"]').forEach(el => {
+    el.addEventListener('change', () => adminAssignGroup(el.dataset.username, el.value));
+  });
+  panel.querySelectorAll('select[data-action="setLeader"]').forEach(el => {
+    el.addEventListener('change', () => adminSetLeader(el.dataset.groupid, el.value));
+  });
+  panel.querySelectorAll('button[data-action="deleteGroup"]').forEach(el => {
+    el.addEventListener('click', () => adminDeleteGroup(el.dataset.groupid));
+  });
+  panel.querySelectorAll('button[data-action="resetPassword"]').forEach(el => {
+    el.addEventListener('click', () => adminResetPassword(el.dataset.username));
+  });
+  panel.querySelectorAll('button[data-action="toggleAdmin"]').forEach(el => {
+    el.addEventListener('click', () => adminToggleAdmin(el.dataset.username, el.dataset.current === '1'));
+  });
+  panel.querySelectorAll('button[data-action="renameUser"]').forEach(el => {
+    el.addEventListener('click', () => adminRenameUser(el.dataset.username));
+  });
+  panel.querySelectorAll('button[data-action="deleteUser"]').forEach(el => {
+    el.addEventListener('click', () => adminDeleteUser(el.dataset.username));
+  });
+  panel.querySelectorAll('button[data-action="toggleLeader"]').forEach(el => {
+    el.addEventListener('click', () => adminToggleLeader(el.dataset.username, el.dataset.groupid, el.dataset.current === '1'));
+  });
+}
+
+async function callAdmin(payload){
+  const res = await fetch('/api/admin', { method:'POST', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify(payload) });
+  const data = await res.json();
+  if(!res.ok){ showToast(data.error || 'エラーが発生しました'); throw new Error(data.error); }
+  return data;
+}
+
+async function adminCreateGroup(){
+  const nameEl = document.getElementById('new-group-name');
+  const name = nameEl.value.trim();
+  if(!name) return;
+  try{ await callAdmin({ action:'createGroup', name }); showToast('グループを作成しました'); await loadAdminPanel(); }catch(e){}
+}
+async function adminAssignGroup(username, groupId){
+  try{ await callAdmin({ action:'assignGroup', username, groupId: groupId || null }); showToast('所属グループを更新しました'); await loadAdminPanel(); }catch(e){}
+}
+async function adminSetLeader(groupId, username){
+  try{ await callAdmin({ action:'setLeader', groupId, username: username || null }); showToast('責任者を更新しました'); await loadAdminPanel(); }catch(e){}
+}
+async function adminDeleteGroup(groupId){
+  if(!confirm('このグループを削除しますか？所属メンバーは未所属になります。')) return;
+  try{ await callAdmin({ action:'deleteGroup', groupId }); showToast('グループを削除しました'); await loadAdminPanel(); }catch(e){}
+}
+async function adminResetPassword(username){
+  const newPassword = prompt(`${username} さんの新しいパスワードを入力してください（4文字以上）`);
+  if(!newPassword) return;
+  try{ await callAdmin({ action:'resetPassword', username, newPassword }); showToast('パスワードを変更しました'); }catch(e){}
+}
+async function adminToggleAdmin(username, current){
+  if(!confirm(current ? `${username} さんの管理者権限を解除しますか？` : `${username} さんを管理者にしますか？`)) return;
+  try{ await callAdmin({ action:'setAdmin', username, isAdmin: !current }); showToast('権限を更新しました'); await loadAdminPanel(); }catch(e){}
+}
+async function adminRenameUser(username){
+  const newUsername = prompt(`${username} さんの新しいユーザーIDを入力してください（半角英数字・ひらがな・カタカナ・漢字、3〜20文字）`, username);
+  if(!newUsername || newUsername === username) return;
+  try{
+    await callAdmin({ action:'renameUser', oldUsername: username, newUsername });
+    showToast('ユーザーIDを変更しました（対象者は再ログインが必要です）');
+    await loadAdminPanel();
+  }catch(e){}
+}
+async function adminDeleteUser(username){
+  if(!confirm(`${username} さんを削除しますか？この操作は取り消せません。タスクや通知設定もすべて削除されます。`)) return;
+  try{
+    await callAdmin({ action:'deleteUser', username });
+    showToast('ユーザーを削除しました');
+    await loadAdminPanel();
+  }catch(e){}
+}
+async function adminToggleLeader(username, groupId, current){
+  if(!confirm(current ? `${username} さんの責任者権限を解除しますか？` : `${username} さんをこのグループの責任者にしますか？`)) return;
+  try{
+    await callAdmin({ action:'setLeader', groupId, username: current ? null : username });
+    showToast('責任者を更新しました');
+    await loadAdminPanel();
+  }catch(e){}
+}
+
 /* ---------- Init ---------- */
 function startApp(){
-  refreshTasks();
-  initPush();
   fetchMe();
+  initPush();
   if(window._tasklineInterval) clearInterval(window._tasklineInterval);
   window._tasklineInterval = setInterval(()=>{ refreshTasks(); }, 30000);
 }

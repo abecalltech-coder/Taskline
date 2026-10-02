@@ -91,12 +91,9 @@ module.exports = async (req, res) => {
         let allowed = false;
         if (me.isAdmin) {
           allowed = true;
-        } else if (me.groupId) {
-          const groups = await getGroups();
-          const group = groups[me.groupId];
-          if (group && group.leaderUsername === username && users[targetUsername].groupId === me.groupId) {
-            allowed = true;
-          }
+        } else if (me.groupId && users[targetUsername].groupId === me.groupId) {
+          // 同じグループに所属していれば誰でも閲覧可能
+          allowed = true;
         }
         if (!allowed) { res.status(403).json({ error: 'このユーザーのタスクを見る権限がありません' }); return; }
         const tasks = await getTasks(targetUsername);
